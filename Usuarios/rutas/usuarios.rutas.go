@@ -7,6 +7,7 @@ import (
 	"github.com/MelinaBritos/TP-Principal-AMAZONA/Usuarios/modelos"
 	"github.com/MelinaBritos/TP-Principal-AMAZONA/baseDeDatos"
 	"github.com/gorilla/mux"
+	
 )
 
 type Usuario = modelos.Usuario
@@ -61,36 +62,72 @@ func GetUsuariosByUsernameHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func EditarContraseña(w http.ResponseWriter, r *http.Request)  {
+func GetUsuariosByRolHandler(w http.ResponseWriter, r *http.Request)  {
 
-	var usuario Usuario
-	var datos struct {
-		Clave string `json:"password"`
+	var usuarios []Usuario
+	parametros := mux.Vars(r)
+	rol := parametros["rol"]
+
+	err := baseDeDatos.DB.Where("rol = ?", rol).Find(&usuarios).Error
+
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+	} else if len(usuarios) == 0{
+		w.WriteHeader(http.StatusNoContent)
+	} else{
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		prettyJSON, err := json.MarshalIndent(usuarios, "", "  ")
+	
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Write(prettyJSON)
 	}
+}
+
+func EditarUsuario(w http.ResponseWriter, r *http.Request){
+	var usuario Usuario
+	err := json.NewDecoder(r.Body).Decode(&usuario)
 
 	params := mux.Vars(r)
 	username := params["username"]
 
-	err := json.NewDecoder(r.Body).Decode(&datos)
-    if err != nil {
-        http.Error(w, "Debe suministrar la contraseña nueva", http.StatusBadRequest)
+	if err != nil {
+        http.Error(w, "JSON inválido", http.StatusBadRequest)
         return
     }
-	
-	
-	err = baseDeDatos.DB.Model(&usuario).Where("username = ?", username).Update("clave", datos.Clave).Error
-	
+
+    if NoExisteNingunCampo(usuario) {
+        http.Error(w, "Debe proporcionar al menos un dato para actualizar", http.StatusBadRequest)
+        return
+    }
+
+	errors := VerificarCamposExistentes(usuario);
+
+	if len(errors) != 0 {
+		http.Error(w, "Algun campo es invalido", http.StatusBadRequest)
+        return
+	}
+
+	err = baseDeDatos.DB.Model(&usuario).Where("username = ?", username).Updates(usuario).Error
+
 	if err != nil {
-		http.Error(w, "Error al actualizar la contraseña", http.StatusInternalServerError)
-		return
+		http.Error(w, "Hubo un problema de actualizacion", http.StatusBadRequest)
+        return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Usuario actualizado :)"))
+	w.Write([]byte("Actualizacion exitosa!"))
+
 }
 
 func CrearUsuario(w http.ResponseWriter, r *http.Request)  {
+
 	var usuario Usuario
 	err := json.NewDecoder(r.Body).Decode(&usuario)
 
@@ -99,13 +136,14 @@ func CrearUsuario(w http.ResponseWriter, r *http.Request)  {
         return
     }
 
-	errors := verificarAtributos(usuario.Dni, usuario.Nombre, usuario.Apellido)
+	errors := verificarAtributos(usuario.Clave, usuario.Dni, usuario.Nombre, usuario.Apellido)
 	
 	if len(errors) != 0 {
 		http.Error(w, errors[0].Error(), http.StatusInternalServerError)
 		return
 	}
 
+	usuario = DefinirUsername(usuario)
 	err = baseDeDatos.DB.Model(&usuario).Create(usuario).Error
 
 	if err != nil {
