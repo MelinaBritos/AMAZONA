@@ -2,7 +2,7 @@ package rutas
 
 import "errors"
 
-func verificarAtributos(dni string, nombre string, apellido string) []error {
+func verificarAtributos(username string, clave string, dni string, nombre string, apellido string) []error {
 
 	var errorList []error
 	err := verificarDni(dni)
@@ -26,6 +26,18 @@ func verificarAtributos(dni string, nombre string, apellido string) []error {
 		appendError(err)
 	}
 
+	err = verificarUsername(username)
+
+	if err != nil {
+		appendError(err)
+	}
+
+	err = verificarcontraseña(clave)
+
+	if err != nil {
+		appendError(err)
+	}
+	
 	return errorList
 }
 
@@ -51,6 +63,22 @@ func verificarNombre(nombre string) error {
 func verificarApellido(apellido string) error {
 	if len(apellido) < 3 {
 		err := errors.New("el apellido debe tener al menos 3 caracteres")
+		return err
+	}
+	return nil
+}
+
+func verificarUsername(username string) error {
+	if len(username) < 3 {
+		err := errors.New("el username debe tener al menos 3 caracteres")
+		return err
+	}
+	return nil
+}
+
+func verificarcontraseña(clave string) error{
+	if len(clave) < 3 {
+		err := errors.New("el username debe tener al menos 3 caracteres")
 		return err
 	}
 	return nil

@@ -99,7 +99,7 @@ func CrearUsuario(w http.ResponseWriter, r *http.Request)  {
         return
     }
 
-	errors := verificarAtributos(usuario.Dni, usuario.Nombre, usuario.Apellido)
+	errors := verificarAtributos(usuario.Username, usuario.Clave, usuario.Dni, usuario.Nombre, usuario.Apellido)
 	
 	if len(errors) != 0 {
 		http.Error(w, errors[0].Error(), http.StatusInternalServerError)
