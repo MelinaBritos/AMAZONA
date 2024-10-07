@@ -1,23 +1,24 @@
 package Proveedor
 
 import (
+	"fmt"
 	"net/http"
 
-	//"github.com/MelinaBritos/TP-Principal-AMAZONA/Proveedor/endpo"
-	"github.com/MelinaBritos/TP-Principal-AMAZONA/baseDeDatos"
-	//proveedore "github.com/MelinaBritos/TP-Principal-AMAZONA/baseDeDatos/Proveedor/Routes"
+	"github.com/MelinaBritos/TP-Principal-AMAZONA/Proveedor/rutas"
 	"github.com/gorilla/mux"
 )
 
 func Iniciar() {
-	baseDeDatos.Conexiondb()
-
-	//baseDedatos.DB.AutoMigrate(modelos.Vehiculo{})
 
 	r := mux.NewRouter()
-	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("ola mundo"))
-	})
 
-	//http.ListenAndServe(":3000", r)
+	r.HandleFunc("/proveedor/{id_proveedor}", rutas.GetProveedorHandler).Methods("GET")
+	r.HandleFunc("/proveedor", rutas.GetProveedoresHandler).Methods("GET")
+
+	r.HandleFunc("/proveedor", rutas.PutProveedorHandler).Methods("PUT") //Modificar datos de algun usuario
+
+	r.HandleFunc("/proveedor", rutas.PostProveedorHandler).Methods("POST") //crear un usuario
+
+	fmt.Println("listen users at port 3002")
+	//http.ListenAndServe(":3002", r)
 }
