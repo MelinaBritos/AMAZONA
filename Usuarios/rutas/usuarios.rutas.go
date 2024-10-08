@@ -8,6 +8,7 @@ import (
 	"github.com/MelinaBritos/TP-Principal-AMAZONA/baseDeDatos"
 	"github.com/gorilla/mux"
 	
+	
 )
 
 type Usuario = modelos.Usuario
@@ -103,8 +104,7 @@ func EditarUsuario(w http.ResponseWriter, r *http.Request){
 
     if NoExisteNingunCampo(usuario) {
         http.Error(w, "Debe proporcionar al menos un dato para actualizar", http.StatusBadRequest)
-        return
-    }
+	}
 
 	errors := VerificarCamposExistentes(usuario);
 
@@ -124,9 +124,13 @@ func EditarUsuario(w http.ResponseWriter, r *http.Request){
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Actualizacion exitosa!"))
 
+	
+
 }
 
+
 func CrearUsuario(w http.ResponseWriter, r *http.Request)  {
+
 
 	var usuario Usuario
 	err := json.NewDecoder(r.Body).Decode(&usuario)
@@ -138,12 +142,20 @@ func CrearUsuario(w http.ResponseWriter, r *http.Request)  {
 
 	errors := verificarAtributos(usuario.Clave, usuario.Dni, usuario.Nombre, usuario.Apellido)
 	
+	
 	if len(errors) != 0 {
 		http.Error(w, errors[0].Error(), http.StatusInternalServerError)
 		return
 	}
 
 	usuario = DefinirUsername(usuario)
+	usuario.Clave, err = Encriptar(usuario.Clave)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	err = baseDeDatos.DB.Model(&usuario).Create(usuario).Error
 
 	if err != nil {
@@ -161,4 +173,29 @@ func CrearUsuario(w http.ResponseWriter, r *http.Request)  {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(prettyJSON))
+}
+
+func EliminarUsuario(w http.ResponseWriter, r *http.Request)  {
+	var usuario Usuario
+
+	params := mux.Vars(r)
+	username := params["username"]
+
+	result := baseDeDatos.DB.Model(&usuario).Where("username = ?", username).Delete(usuario)
+
+	if result.Error != nil {
+		http.Error(w, "Hubo un problema de eliminacion", http.StatusBadRequest)
+        return
+	}
+
+	if result.RowsAffected == 0 {
+		http.Error(w, "No existe tal usuario", http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Eliminacion exitosa!"))
+
+	
 }
