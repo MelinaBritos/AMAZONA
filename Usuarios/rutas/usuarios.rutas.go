@@ -144,6 +144,13 @@ func CrearUsuario(w http.ResponseWriter, r *http.Request)  {
 	}
 
 	usuario = DefinirUsername(usuario)
+	usuario.Clave, err = Encriptar(usuario.Clave)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	err = baseDeDatos.DB.Model(&usuario).Create(usuario).Error
 
 	if err != nil {
@@ -161,4 +168,29 @@ func CrearUsuario(w http.ResponseWriter, r *http.Request)  {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(prettyJSON))
+}
+
+func EliminarUsuario(w http.ResponseWriter, r *http.Request)  {
+	var usuario Usuario
+
+	params := mux.Vars(r)
+	username := params["username"]
+
+	result := baseDeDatos.DB.Model(&usuario).Where("username = ?", username).Delete(usuario)
+
+	if result.Error != nil {
+		http.Error(w, "Hubo un problema de eliminacion", http.StatusBadRequest)
+        return
+	}
+
+	if result.RowsAffected == 0 {
+		http.Error(w, "No existe tal usuario", http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Eliminacion exitosa!"))
+
+	
 }
