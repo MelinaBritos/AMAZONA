@@ -159,7 +159,7 @@ func CrearUsuario(w http.ResponseWriter, r *http.Request)  {
 	err = baseDeDatos.DB.Model(&usuario).Create(usuario).Error
 
 	if err != nil {
-		http.Error(w, errors[0].Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	
