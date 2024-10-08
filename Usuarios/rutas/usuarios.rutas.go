@@ -8,6 +8,7 @@ import (
 	"github.com/MelinaBritos/TP-Principal-AMAZONA/baseDeDatos"
 	"github.com/gorilla/mux"
 	
+	
 )
 
 type Usuario = modelos.Usuario
@@ -103,8 +104,7 @@ func EditarUsuario(w http.ResponseWriter, r *http.Request){
 
     if NoExisteNingunCampo(usuario) {
         http.Error(w, "Debe proporcionar al menos un dato para actualizar", http.StatusBadRequest)
-        return
-    }
+	}
 
 	errors := VerificarCamposExistentes(usuario);
 
@@ -124,9 +124,13 @@ func EditarUsuario(w http.ResponseWriter, r *http.Request){
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Actualizacion exitosa!"))
 
+	
+
 }
 
+
 func CrearUsuario(w http.ResponseWriter, r *http.Request)  {
+
 
 	var usuario Usuario
 	err := json.NewDecoder(r.Body).Decode(&usuario)
@@ -137,6 +141,7 @@ func CrearUsuario(w http.ResponseWriter, r *http.Request)  {
     }
 
 	errors := verificarAtributos(usuario.Clave, usuario.Dni, usuario.Nombre, usuario.Apellido)
+	
 	
 	if len(errors) != 0 {
 		http.Error(w, errors[0].Error(), http.StatusInternalServerError)
