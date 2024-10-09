@@ -41,9 +41,9 @@ func GetUsuarioByUsernameHandler(w http.ResponseWriter, r *http.Request) {
 
 	var usuario Usuario
 	parametros := mux.Vars(r)
-	username := parametros["username"]
+	id := parametros["id"]
 
-	err := baseDeDatos.DB.Where("username = ?", username).Find(&usuario).Error
+	err := baseDeDatos.DB.Where("id = ?", id).Find(&usuario).Error
 
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -94,7 +94,7 @@ func EditarUsuario(w http.ResponseWriter, r *http.Request){
 	err := json.NewDecoder(r.Body).Decode(&usuario)
 
 	params := mux.Vars(r)
-	username := params["username"]
+	id := params["id"]
 
 	if err != nil {
         http.Error(w, "JSON inválido", http.StatusBadRequest)
@@ -112,7 +112,7 @@ func EditarUsuario(w http.ResponseWriter, r *http.Request){
         return
 	}
 
-	err = baseDeDatos.DB.Model(&usuario).Where("username = ?", username).Updates(usuario).Error
+	err = baseDeDatos.DB.Model(&usuario).Where("id = ?", id).Updates(&usuario).Error
 
 	if err != nil {
 		http.Error(w, "Hubo un problema de actualizacion", http.StatusBadRequest)
@@ -155,7 +155,7 @@ func CrearUsuario(w http.ResponseWriter, r *http.Request)  {
 		return
 	}
 
-	err = baseDeDatos.DB.Model(&usuario).Create(usuario).Error
+	err = baseDeDatos.DB.Model(&usuario).Create(&usuario).Error
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -178,9 +178,9 @@ func EliminarUsuario(w http.ResponseWriter, r *http.Request)  {
 	var usuario Usuario
 
 	params := mux.Vars(r)
-	username := params["username"]
+	id := params["id"]
 
-	result := baseDeDatos.DB.Model(&usuario).Where("username = ?", username).Delete(usuario)
+	result := baseDeDatos.DB.Model(&usuario).Where("id = ?", id).Delete(usuario)
 
 	if result.Error != nil {
 		http.Error(w, "Hubo un problema de eliminacion", http.StatusBadRequest)

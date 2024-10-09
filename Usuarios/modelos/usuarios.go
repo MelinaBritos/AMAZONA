@@ -17,6 +17,7 @@ type Credencial struct{
 
 type Usuario struct {
 
+	Id uint  `gorm:"primaryKey;autoIncrement" json:"id"`
 	Username string  `json:"username"`
 	Clave    string  `json:"clave"`
 	Nombre   string  `json:"nombre"`

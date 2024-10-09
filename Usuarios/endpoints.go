@@ -14,17 +14,16 @@ func Iniciar() {
 
 	// Devolver por cada rol - ejemplo conductores
     r.HandleFunc("/usuarios", rutas.GetUsuariosHandler).Methods("GET")
-    r.HandleFunc("/usuarios/{username}", rutas.GetUsuarioByUsernameHandler).Methods("GET")
+    r.HandleFunc("/usuarios/{id}", rutas.GetUsuarioByUsernameHandler).Methods("GET")
 	r.HandleFunc("/usuarios/roles/{rol}", rutas.GetUsuariosByRolHandler).Methods("GET")
 	
 
-	r.HandleFunc("/usuarios/{username}", rutas.EditarUsuario).Methods("PUT") //Modificar datos de algun usuario
+	r.HandleFunc("/usuarios/{id}", rutas.EditarUsuario).Methods("PUT") //Modificar datos de algun usuario
 	r.HandleFunc("/usuarios", rutas.CrearUsuario).Methods("POST") //crear un usuario
 	r.HandleFunc("/usuarios/login", rutas.Loguearse).Methods("POST")
 
-	r.HandleFunc("/usuarios/{username}", rutas.EliminarUsuario).Methods("DELETE")
+	r.HandleFunc("/usuarios/{id}", rutas.EliminarUsuario).Methods("DELETE")
 
-	r.HandleFunc("/usuarios/{username}", rutas.EliminarUsuario).Methods("DELETE")
 
 	fmt.Println("listen users at port 3001")
     http.ListenAndServe(":3001", r)
