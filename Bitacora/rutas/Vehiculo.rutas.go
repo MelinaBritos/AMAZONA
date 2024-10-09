@@ -66,11 +66,6 @@ func PostVehiculoHandler(w http.ResponseWriter, r *http.Request) {
 
 func validarVehiculo(vehiculo modelosBitacora.Vehiculo) error {
 
-	/*if vehiculo.Estado != "NO APTO PARA CIRCULAR" || vehiculo.Estado != "APTO PARA CIRCULAR" || vehiculo.Estado != "EN VIAJE" ||
-		vehiculo.Estado != "EN REPARACION" || vehiculo.Estado != "MANTENIMIENTO" || vehiculo.Estado != "DESHABILITADO" {
-		return errors.New("estado invalido")
-	}*/
-
 	switch vehiculo.Estado {
 	case "NO APTO PARA CIRCULAR", "APTO PARA CIRCULAR", "EN VIAJE", "EN REPARACION", "MANTENIMIENTO", "DESHABILITADO":
 		// Estado válido, no hacer nada
