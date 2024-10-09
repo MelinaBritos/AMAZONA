@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/MelinaBritos/TP-Principal-AMAZONA/Proveedor/modelos"
+	"github.com/MelinaBritos/TP-Principal-AMAZONA/Proveedor/modelosProveedor"
 	"github.com/MelinaBritos/TP-Principal-AMAZONA/baseDeDatos"
 )
 
@@ -25,7 +25,7 @@ func GetProveedorHandler(w http.ResponseWriter, r *http.Request) {
 func PostProveedorHandler(w http.ResponseWriter, r *http.Request) {
 	//aca va la logica para agregar un nuevo proveedor
 	//w.Write([]byte("ola mundo post proveedor"))
-	var proveedor modelos.Proveedor
+	var proveedor modelosProveedor.Proveedor
 
 	if err := json.NewDecoder(r.Body).Decode(&proveedor); err != nil {
 		http.Error(w, "Error al decodificar el proveedor: "+err.Error(), http.StatusBadRequest)

@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/MelinaBritos/TP-Principal-AMAZONA/Bitacora"
 	"github.com/MelinaBritos/TP-Principal-AMAZONA/Proveedor"
-	"github.com/MelinaBritos/TP-Principal-AMAZONA/Proveedor/modelos"
+	"github.com/MelinaBritos/TP-Principal-AMAZONA/Proveedor/modelosProveedor"
 	"github.com/MelinaBritos/TP-Principal-AMAZONA/Usuarios"
 	"github.com/MelinaBritos/TP-Principal-AMAZONA/baseDeDatos"
 )
@@ -11,7 +11,7 @@ import (
 func main() {
 
 	baseDeDatos.Conexiondb()
-	baseDeDatos.DB.AutoMigrate(modelos.Proveedor{})
+	baseDeDatos.DB.AutoMigrate(modelosProveedor.Proveedor{})
 
 	Bitacora.Iniciar()
 	Proveedor.Iniciar()
