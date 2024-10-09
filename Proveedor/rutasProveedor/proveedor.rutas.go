@@ -1,4 +1,4 @@
-package rutas
+package rutasProveedor
 
 import (
 	"encoding/json"
