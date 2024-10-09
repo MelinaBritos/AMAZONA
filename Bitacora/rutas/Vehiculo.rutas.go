@@ -33,7 +33,7 @@ func GetVehiculoHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func PostProductosHandler(w http.ResponseWriter, r *http.Request) {
+func PostVehiculoHandler(w http.ResponseWriter, r *http.Request) {
 	var vehiculos []modelosBitacora.Vehiculo
 
 	if err := json.NewDecoder(r.Body).Decode(&vehiculos); err != nil {
