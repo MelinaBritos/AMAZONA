@@ -14,7 +14,10 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 
 func GetProveedoresHandler(w http.ResponseWriter, r *http.Request) {
 	//aca va la logica para obtener los proveedores
-	w.Write([]byte("ola mundo proveedores"))
+	var proveedores []modelosProveedor.Proveedor
+	baseDeDatos.DB.Find(&proveedores)
+	json.NewEncoder(w).Encode(&proveedores)
+
 }
 
 func GetProveedorHandler(w http.ResponseWriter, r *http.Request) {
