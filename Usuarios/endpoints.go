@@ -13,14 +13,14 @@ func Iniciar() {
 	usr:= r.PathPrefix("/usuarios").Subrouter()
 
     usr.HandleFunc("", rutas.GetUsuariosHandler).Methods("GET")
-    usr.HandleFunc("/{id}", rutas.GetUsuarioByIdHandler).Methods("GET")
+    usr.HandleFunc("/{username}", rutas.GetUsuarioByIdHandler).Methods("GET")
 	usr.HandleFunc("/roles/{rol}", rutas.GetUsuariosByRolHandler).Methods("GET")
 	
-	usr.HandleFunc("/{id}", rutas.EditarUsuario).Methods("PUT") //Modificar datos de algun usuario
+	usr.HandleFunc("/{username}", rutas.EditarUsuario).Methods("PUT") //Modificar datos de algun usuario
 	usr.HandleFunc("", rutas.CrearUsuario).Methods("POST") //crear un usuario
 	usr.HandleFunc("/login", rutas.Loguearse).Methods("POST")
 
-	usr.HandleFunc("/{id}", rutas.EliminarUsuario).Methods("DELETE")
+	usr.HandleFunc("/{username}", rutas.EliminarUsuario).Methods("DELETE")
 
 
 	fmt.Println("listen users at port 3001")
