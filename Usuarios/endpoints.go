@@ -3,7 +3,6 @@ package Usuarios
 import (
 	"fmt"
 	"net/http"
-
 	"github.com/MelinaBritos/TP-Principal-AMAZONA/Usuarios/rutas"
 	"github.com/gorilla/mux"
 )
@@ -11,18 +10,17 @@ import (
 func Iniciar() {
 
 	r := mux.NewRouter()
+	usr:= r.PathPrefix("/usuarios").Subrouter()
 
-	// Devolver por cada rol - ejemplo conductores
-    r.HandleFunc("/usuarios", rutas.GetUsuariosHandler).Methods("GET")
-    r.HandleFunc("/usuarios/{id}", rutas.GetUsuarioByUsernameHandler).Methods("GET")
-	r.HandleFunc("/usuarios/roles/{rol}", rutas.GetUsuariosByRolHandler).Methods("GET")
+    usr.HandleFunc("", rutas.GetUsuariosHandler).Methods("GET")
+    usr.HandleFunc("/{id}", rutas.GetUsuarioByIdHandler).Methods("GET")
+	usr.HandleFunc("/roles/{rol}", rutas.GetUsuariosByRolHandler).Methods("GET")
 	
+	usr.HandleFunc("/{id}", rutas.EditarUsuario).Methods("PUT") //Modificar datos de algun usuario
+	usr.HandleFunc("", rutas.CrearUsuario).Methods("POST") //crear un usuario
+	usr.HandleFunc("/login", rutas.Loguearse).Methods("POST")
 
-	r.HandleFunc("/usuarios/{id}", rutas.EditarUsuario).Methods("PUT") //Modificar datos de algun usuario
-	r.HandleFunc("/usuarios", rutas.CrearUsuario).Methods("POST") //crear un usuario
-	r.HandleFunc("/usuarios/login", rutas.Loguearse).Methods("POST")
-
-	r.HandleFunc("/usuarios/{id}", rutas.EliminarUsuario).Methods("DELETE")
+	usr.HandleFunc("/{id}", rutas.EliminarUsuario).Methods("DELETE")
 
 
 	fmt.Println("listen users at port 3001")

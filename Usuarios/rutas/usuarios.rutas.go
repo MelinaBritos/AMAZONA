@@ -2,13 +2,13 @@ package rutas
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 
 	"github.com/MelinaBritos/TP-Principal-AMAZONA/Usuarios/modelos"
 	"github.com/MelinaBritos/TP-Principal-AMAZONA/baseDeDatos"
 	"github.com/gorilla/mux"
-	
-	
+	"gorm.io/gorm"
 )
 
 type Usuario = modelos.Usuario
@@ -37,16 +37,18 @@ func GetUsuariosHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func GetUsuarioByUsernameHandler(w http.ResponseWriter, r *http.Request) {
+func GetUsuarioByIdHandler(w http.ResponseWriter, r *http.Request) {
 
 	var usuario Usuario
 	parametros := mux.Vars(r)
 	id := parametros["id"]
 
-	err := baseDeDatos.DB.Where("id = ?", id).Find(&usuario).Error
+	err := baseDeDatos.DB.Where("id = ?", id).First(&usuario).Error
 
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
+	} else if errors.Is(err, gorm.ErrRecordNotFound){
+		http.Error(w, "Usuario no encontrado", http.StatusNotFound)
 	} else{
 
 		w.Header().Set("Content-Type", "application/json")
