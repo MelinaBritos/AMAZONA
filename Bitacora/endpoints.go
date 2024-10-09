@@ -1,16 +1,11 @@
 package Bitacora
 
 import (
-	//"github.com/MelinaBritos/TP-Principal-AMAZONA/Bitacora/modelos"
 	"github.com/MelinaBritos/TP-Principal-AMAZONA/Bitacora/rutas"
-	"github.com/MelinaBritos/TP-Principal-AMAZONA/baseDeDatos"
 	"github.com/gorilla/mux"
 )
 
 func Iniciar() {
-	baseDeDatos.Conexiondb()
-
-	//baseDeDatos.DB.AutoMigrate(modelos.Vehiculo{})
 
 	r := mux.NewRouter()
 

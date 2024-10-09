@@ -1,4 +1,4 @@
-package modelos
+package modelosProveedor
 
 import (
 	"gorm.io/gorm"
