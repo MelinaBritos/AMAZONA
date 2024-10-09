@@ -12,6 +12,7 @@ import (
 )
 
 type Usuario = modelos.Usuario
+type Credencial = modelos.Credencial
 
 func GetUsuariosHandler(w http.ResponseWriter, r *http.Request) {
 
@@ -36,23 +37,21 @@ func GetUsuariosHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func GetUsuariosByUsernameHandler(w http.ResponseWriter, r *http.Request) {
+func GetUsuarioByUsernameHandler(w http.ResponseWriter, r *http.Request) {
 
-	var usuarios []Usuario
+	var usuario Usuario
 	parametros := mux.Vars(r)
 	username := parametros["username"]
 
-	err := baseDeDatos.DB.Where("username = ?", username).Find(&usuarios).Error
+	err := baseDeDatos.DB.Where("username = ?", username).Find(&usuario).Error
 
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-	} else if len(usuarios) == 0{
-		w.WriteHeader(http.StatusNoContent)
 	} else{
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		prettyJSON, err := json.MarshalIndent(usuarios, "", "  ")
+		prettyJSON, err := json.MarshalIndent(usuario, "", "  ")
 	
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -198,4 +197,43 @@ func EliminarUsuario(w http.ResponseWriter, r *http.Request)  {
 	w.Write([]byte("Eliminacion exitosa!"))
 
 	
+}
+
+func Loguearse(w http.ResponseWriter, r *http.Request)  {
+	
+	var usuario Usuario
+	var credencial Credencial
+	
+	err := json.NewDecoder(r.Body).Decode(&credencial)
+
+	if err != nil {
+		http.Error(w,"json invalido", http.StatusBadRequest)
+		return 
+	}
+
+	err = baseDeDatos.DB.Model(&usuario).Where("username = ?", credencial.Username).First(&usuario).Error
+
+	if err != nil{
+		http.Error(w,"usuario no encontrado", http.StatusNotFound)
+		return 
+	}
+
+	err = Equals(credencial.Password, usuario.Clave)
+
+	if err != nil{
+		http.Error(w, "la contraseña es incorrecta", http.StatusUnauthorized)
+		return 
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	prettyJSON, err := json.MarshalIndent(usuario, "", "  ")
+	
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Write(prettyJSON)
+
 }

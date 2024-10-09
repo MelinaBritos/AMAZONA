@@ -10,6 +10,11 @@ const (
 	MECANICO      ROL = "MECANICO"
 )
 
+type Credencial struct{
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
 type Usuario struct {
 
 	Username string  `json:"username"`
