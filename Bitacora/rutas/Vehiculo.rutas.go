@@ -4,20 +4,20 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/MelinaBritos/TP-Principal-AMAZONA/Bitacora/modelos"
+	"github.com/MelinaBritos/TP-Principal-AMAZONA/Bitacora/modelosBitacora"
 	"github.com/MelinaBritos/TP-Principal-AMAZONA/baseDeDatos"
 	"github.com/gorilla/mux"
 )
 
 func GetVehiculosHandler(w http.ResponseWriter, r *http.Request) {
-	var vehiculos []modelos.Vehiculo
+	var vehiculos []modelosBitacora.Vehiculo
 
 	baseDeDatos.DB.Find(&vehiculos)
 	json.NewEncoder(w).Encode(&vehiculos)
 }
 
 func GetVehiculoHandler(w http.ResponseWriter, r *http.Request) {
-	var vehiculo modelos.Vehiculo
+	var vehiculo modelosBitacora.Vehiculo
 	parametros := mux.Vars(r)
 
 	baseDeDatos.DB.First(&vehiculo, parametros["id"])
@@ -33,7 +33,7 @@ func GetVehiculoHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func PostProductosHandler(w http.ResponseWriter, r *http.Request) {
-	var vehiculos []modelos.Vehiculo
+	var vehiculos []modelosBitacora.Vehiculo
 
 	if err := json.NewDecoder(r.Body).Decode(&vehiculos); err != nil {
 		http.Error(w, "Error al decodificar los vehiculos: "+err.Error(), http.StatusBadRequest)
@@ -63,7 +63,7 @@ func PostProductosHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func validarVehiculo(vehiculo modelos.Vehiculo) error {
+func validarVehiculo(vehiculo modelosBitacora.Vehiculo) error {
 
 	// how??
 	return nil
