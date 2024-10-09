@@ -2,6 +2,7 @@ package rutas
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 
 	"github.com/MelinaBritos/TP-Principal-AMAZONA/Bitacora/modelosBitacora"
@@ -32,7 +33,7 @@ func GetVehiculoHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func PostProductosHandler(w http.ResponseWriter, r *http.Request) {
+func PostVehiculoHandler(w http.ResponseWriter, r *http.Request) {
 	var vehiculos []modelosBitacora.Vehiculo
 
 	if err := json.NewDecoder(r.Body).Decode(&vehiculos); err != nil {
@@ -65,6 +66,12 @@ func PostProductosHandler(w http.ResponseWriter, r *http.Request) {
 
 func validarVehiculo(vehiculo modelosBitacora.Vehiculo) error {
 
-	// how??
+	switch vehiculo.Estado {
+	case "NO APTO PARA CIRCULAR", "APTO PARA CIRCULAR", "EN VIAJE", "EN REPARACION", "MANTENIMIENTO", "DESHABILITADO":
+		// Estado válido, no hacer nada
+	default:
+		return errors.New("estado invalido")
+	}
+
 	return nil
 }

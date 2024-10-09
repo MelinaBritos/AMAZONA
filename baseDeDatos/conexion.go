@@ -2,12 +2,15 @@ package baseDeDatos
 
 import (
 	"log"
-	"github.com/joho/godotenv"
 	"os"
+
+	"github.com/MelinaBritos/TP-Principal-AMAZONA/Bitacora/modelosBitacora"
+	"github.com/MelinaBritos/TP-Principal-AMAZONA/Proveedor/modelosProveedor"
+	"github.com/MelinaBritos/TP-Principal-AMAZONA/Usuarios/modelosUsuarios"
+	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
-
 
 var DB *gorm.DB
 
@@ -16,7 +19,7 @@ func Conexiondb() {
 
 	DSN, err := ObtenerDSN()
 
-	if err != nil{
+	if err != nil {
 		log.Fatal(err)
 		return
 	}
@@ -31,8 +34,16 @@ func Conexiondb() {
 
 func ObtenerDSN() (string, error) {
 	err := godotenv.Load("../TP-Principal-AMAZONA/.env.example")
-	if err != nil{
+	if err != nil {
 		return "", err
 	}
 	return os.Getenv("DSN"), nil
+}
+
+func CrearTablas() {
+
+	DB.AutoMigrate(modelosProveedor.Proveedor{})
+	DB.AutoMigrate(modelosBitacora.Vehiculo{})
+	DB.AutoMigrate(modelosUsuarios.Usuario{})
+
 }
