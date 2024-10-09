@@ -4,6 +4,9 @@ import (
 	"log"
 	"os"
 
+	"github.com/MelinaBritos/TP-Principal-AMAZONA/Bitacora/modelosBitacora"
+	"github.com/MelinaBritos/TP-Principal-AMAZONA/Proveedor/modelosProveedor"
+	"github.com/MelinaBritos/TP-Principal-AMAZONA/Usuarios/modelosUsuarios"
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -35,4 +38,12 @@ func ObtenerDSN() (string, error) {
 		return "", err
 	}
 	return os.Getenv("DSN"), nil
+}
+
+func CrearTablas() {
+
+	DB.AutoMigrate(modelosProveedor.Proveedor{})
+	DB.AutoMigrate(modelosBitacora.Vehiculo{})
+	DB.AutoMigrate(modelosUsuarios.Usuario{})
+
 }
