@@ -5,14 +5,14 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/MelinaBritos/TP-Principal-AMAZONA/Usuarios/modelos"
+	"github.com/MelinaBritos/TP-Principal-AMAZONA/Usuarios/modelosUsuarios"
 	"github.com/MelinaBritos/TP-Principal-AMAZONA/baseDeDatos"
 	"github.com/gorilla/mux"
 	"gorm.io/gorm"
 )
 
-type Usuario = modelos.Usuario
-type Credencial = modelos.Credencial
+type Usuario = modelosUsuarios.Usuario
+type Credencial = modelosUsuarios.Credencial
 
 func GetUsuariosHandler(w http.ResponseWriter, r *http.Request) {
 
@@ -27,7 +27,7 @@ func GetUsuariosHandler(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		prettyJSON, err := json.MarshalIndent(usuarios, "", "  ")
-	
+
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -41,20 +41,20 @@ func GetUsuarioByIdHandler(w http.ResponseWriter, r *http.Request) {
 
 	var usuario Usuario
 	parametros := mux.Vars(r)
-	id := parametros["id"]
+	username := parametros["username"]
 
-	err := baseDeDatos.DB.Where("id = ?", id).First(&usuario).Error
+	err := baseDeDatos.DB.Where("username = ?", username).First(&usuario).Error
 
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-	} else if errors.Is(err, gorm.ErrRecordNotFound){
+	} else if errors.Is(err, gorm.ErrRecordNotFound) {
 		http.Error(w, "Usuario no encontrado", http.StatusNotFound)
-	} else{
+	} else {
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		prettyJSON, err := json.MarshalIndent(usuario, "", "  ")
-	
+
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -64,7 +64,7 @@ func GetUsuarioByIdHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func GetUsuariosByRolHandler(w http.ResponseWriter, r *http.Request)  {
+func GetUsuariosByRolHandler(w http.ResponseWriter, r *http.Request) {
 
 	var usuarios []Usuario
 	parametros := mux.Vars(r)
@@ -74,14 +74,14 @@ func GetUsuariosByRolHandler(w http.ResponseWriter, r *http.Request)  {
 
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-	} else if len(usuarios) == 0{
+	} else if len(usuarios) == 0 {
 		w.WriteHeader(http.StatusNoContent)
-	} else{
+	} else {
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		prettyJSON, err := json.MarshalIndent(usuarios, "", "  ")
-	
+
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -91,59 +91,54 @@ func GetUsuariosByRolHandler(w http.ResponseWriter, r *http.Request)  {
 	}
 }
 
-func EditarUsuario(w http.ResponseWriter, r *http.Request){
+func EditarUsuario(w http.ResponseWriter, r *http.Request) {
 	var usuario Usuario
 	err := json.NewDecoder(r.Body).Decode(&usuario)
 
 	params := mux.Vars(r)
-	id := params["id"]
+	username := params["username"]
 
 	if err != nil {
-        http.Error(w, "JSON inválido", http.StatusBadRequest)
-        return
-    }
-
-    if NoExisteNingunCampo(usuario) {
-        http.Error(w, "Debe proporcionar al menos un dato para actualizar", http.StatusBadRequest)
+		http.Error(w, "JSON inválido", http.StatusBadRequest)
+		return
 	}
 
-	errors := VerificarCamposExistentes(usuario);
+	if NoExisteNingunCampo(usuario) {
+		http.Error(w, "Debe proporcionar al menos un dato para actualizar", http.StatusBadRequest)
+	}
+
+	errors := VerificarCamposExistentes(usuario)
 
 	if len(errors) != 0 {
 		http.Error(w, "Algun campo es invalido", http.StatusBadRequest)
-        return
+		return
 	}
 
-	err = baseDeDatos.DB.Model(&usuario).Where("id = ?", id).Updates(&usuario).Error
+	err = baseDeDatos.DB.Model(&usuario).Where("username = ?", username).Updates(&usuario).Error
 
 	if err != nil {
 		http.Error(w, "Hubo un problema de actualizacion", http.StatusBadRequest)
-        return
+		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Actualizacion exitosa!"))
 
-	
-
 }
 
-
-func CrearUsuario(w http.ResponseWriter, r *http.Request)  {
-
+func CrearUsuario(w http.ResponseWriter, r *http.Request) {
 
 	var usuario Usuario
 	err := json.NewDecoder(r.Body).Decode(&usuario)
 
 	if err != nil {
-        http.Error(w, "JSON inválido", http.StatusBadRequest)
-        return
-    }
+		http.Error(w, "JSON inválido", http.StatusBadRequest)
+		return
+	}
 
 	errors := verificarAtributos(usuario.Clave, usuario.Dni, usuario.Nombre, usuario.Apellido)
-	
-	
+
 	if len(errors) != 0 {
 		http.Error(w, errors[0].Error(), http.StatusInternalServerError)
 		return
@@ -163,9 +158,9 @@ func CrearUsuario(w http.ResponseWriter, r *http.Request)  {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	
+
 	prettyJSON, err := json.MarshalIndent(usuario, "", "  ")
-	
+
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -176,21 +171,16 @@ func CrearUsuario(w http.ResponseWriter, r *http.Request)  {
 	w.Write([]byte(prettyJSON))
 }
 
-func EliminarUsuario(w http.ResponseWriter, r *http.Request)  {
+func EliminarUsuario(w http.ResponseWriter, r *http.Request) {
 	var usuario Usuario
 
 	params := mux.Vars(r)
-	id := params["id"]
+	username := params["username"]
 
-	result := baseDeDatos.DB.Model(&usuario).Where("id = ?", id).Delete(usuario)
+	err := baseDeDatos.DB.Where("username = ?", username).Unscoped().Delete(&usuario).Error
 
-	if result.Error != nil {
+	if err != nil {
 		http.Error(w, "Hubo un problema de eliminacion", http.StatusBadRequest)
-        return
-	}
-
-	if result.RowsAffected == 0 {
-		http.Error(w, "No existe tal usuario", http.StatusNotFound)
 		return
 	}
 
@@ -198,39 +188,38 @@ func EliminarUsuario(w http.ResponseWriter, r *http.Request)  {
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Eliminacion exitosa!"))
 
-	
 }
 
-func Loguearse(w http.ResponseWriter, r *http.Request)  {
-	
+func Loguearse(w http.ResponseWriter, r *http.Request) {
+
 	var usuario Usuario
 	var credencial Credencial
-	
+
 	err := json.NewDecoder(r.Body).Decode(&credencial)
 
 	if err != nil {
-		http.Error(w,"json invalido", http.StatusBadRequest)
-		return 
+		http.Error(w, "json invalido", http.StatusBadRequest)
+		return
 	}
 
 	err = baseDeDatos.DB.Model(&usuario).Where("username = ?", credencial.Username).First(&usuario).Error
 
-	if err != nil{
-		http.Error(w,"usuario no encontrado", http.StatusNotFound)
-		return 
+	if err != nil {
+		http.Error(w, "usuario no encontrado", http.StatusNotFound)
+		return
 	}
 
 	err = Equals(credencial.Password, usuario.Clave)
 
-	if err != nil{
+	if err != nil {
 		http.Error(w, "la contraseña es incorrecta", http.StatusUnauthorized)
-		return 
+		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	prettyJSON, err := json.MarshalIndent(usuario, "", "  ")
-	
+
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
