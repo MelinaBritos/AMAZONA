@@ -22,7 +22,6 @@ func GenerarEndpoints() {
 
 	if err != nil {
 		println(err)
-		return
 	}
 
 	EndpointsVehiculo(r)
@@ -34,9 +33,9 @@ func GenerarEndpoints() {
 
 func CargarPuerto() (string, error){
 
-	err := godotenv.Load("../TP-Principal-AMAZONA/.env.example")
+	err := godotenv.Load(".env.example")
 	if err != nil {
-		return "", err
+		return os.Getenv("PORT"), err
 	}
 	return os.Getenv("PORT"), nil
 }

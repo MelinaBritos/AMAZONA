@@ -21,7 +21,7 @@ func Conexiondb() {
 
 	if err != nil {
 		log.Fatal(err)
-		return
+		println("Probando otros metodos...")
 	}
 
 	DB, err = gorm.Open(postgres.Open(DSN), &gorm.Config{})
@@ -33,9 +33,9 @@ func Conexiondb() {
 }
 
 func ObtenerDSN() (string, error) {
-	err := godotenv.Load("../TP-Principal-AMAZONA/.env.example")
+	err := godotenv.Load(".env.example")
 	if err != nil {
-		return "", err
+		return os.Getenv("DSN"), err
 	}
 	return os.Getenv("DSN"), nil
 }
