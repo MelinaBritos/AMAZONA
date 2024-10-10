@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 
@@ -18,7 +19,7 @@ func GenerarEndpoints() {
 	r := mux.NewRouter()
 
 
-	port, err := CargarPuerto()
+	port, err := CargarPuertoV2()
 
 	if err != nil {
 		println(err)
@@ -38,6 +39,16 @@ func CargarPuerto() (string, error){
 		return os.Getenv("PORT"), err
 	}
 	return os.Getenv("PORT"), nil
+}
+
+func CargarPuertoV2() (string, error) {
+
+	port := os.Getenv("PORT")
+
+	if port == "" {
+		return port, fmt.Errorf("no existe el puerto")
+	}
+	return port, nil
 }
 
 func EndpointsVehiculo(r *mux.Router)  {

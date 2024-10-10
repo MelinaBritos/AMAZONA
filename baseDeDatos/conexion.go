@@ -1,6 +1,7 @@
 package baseDeDatos
 
 import (
+	"fmt"
 	"log"
 	"os"
 
@@ -8,6 +9,7 @@ import (
 	"github.com/MelinaBritos/TP-Principal-AMAZONA/Proveedor/modelosProveedor"
 	"github.com/MelinaBritos/TP-Principal-AMAZONA/Usuarios/modelosUsuarios"
 	"github.com/joho/godotenv"
+
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -17,7 +19,7 @@ var DB *gorm.DB
 func Conexiondb() {
 	var err error
 
-	DSN, err := ObtenerDSN()
+	DSN, err := ObtenerDSNV2()
 
 	if err != nil {
 		log.Fatal(err)
@@ -32,12 +34,22 @@ func Conexiondb() {
 	}
 }
 
+func ObtenerDSNV2() (string, error){
+	dsn := os.Getenv("DSN")
+    if dsn == "" {
+        return "", fmt.Errorf("la variable de entorno 'DSN' no está configurada")
+    }
+    return dsn, nil
+}
 func ObtenerDSN() (string, error) {
+	
 	err := godotenv.Load(".env.example")
 	if err != nil {
 		return os.Getenv("DSN"), err
 	}
 	return os.Getenv("DSN"), nil
+
+	
 }
 
 func CrearTablas() {
