@@ -2,10 +2,12 @@ package main
 
 import (
 	"net/http"
+	"os"
 
 	"github.com/MelinaBritos/TP-Principal-AMAZONA/Bitacora/rutas"
 	"github.com/MelinaBritos/TP-Principal-AMAZONA/Proveedor/rutasProveedor"
-	
+	"github.com/joho/godotenv"
+
 	rutasUsuarios "github.com/MelinaBritos/TP-Principal-AMAZONA/Usuarios/rutasUsuarios"
 	"github.com/gorilla/mux"
 )
@@ -15,11 +17,28 @@ func GenerarEndpoints() {
 
 	r := mux.NewRouter()
 
+
+	port, err := CargarPuerto()
+
+	if err != nil {
+		println(err)
+		return
+	}
+
 	EndpointsVehiculo(r)
 	EndpointsProveedores(r)
 	EndpointsUsuarios(r)
 
-	http.ListenAndServe(":3000", r)
+	http.ListenAndServe(":" + port, r)
+}
+
+func CargarPuerto() (string, error){
+
+	err := godotenv.Load("../TP-Principal-AMAZONA/.env.example")
+	if err != nil {
+		return "", err
+	}
+	return os.Getenv("PORT"), nil
 }
 
 func EndpointsVehiculo(r *mux.Router)  {
