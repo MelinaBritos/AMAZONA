@@ -18,7 +18,7 @@ func Iniciar() {
 	r.HandleFunc("/vehiculos", rutas.PostVehiculoHandler).Methods("POST")
 
 	// HANDLERS PROOVEDOR
-	r.HandleFunc("/proveedor/{id}", rutasProveedor.GetProveedorHandler).Methods("GET")
+	r.HandleFunc("/proveedor/{id_proveedor}", rutasProveedor.GetProveedorHandler).Methods("GET")
 	r.HandleFunc("/proveedor", rutasProveedor.GetProveedoresHandler).Methods("GET")
 	r.HandleFunc("/proveedor", rutasProveedor.PutProveedorHandler).Methods("PUT")   //Modificar datos de algun usuario
 	r.HandleFunc("/proveedor", rutasProveedor.PostProveedorHandler).Methods("POST") //crear un usuario
