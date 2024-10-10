@@ -9,5 +9,5 @@ func main() {
 	baseDeDatos.Conexiondb()
 	baseDeDatos.CrearTablas()
 
-	Iniciar()
+	GenerarEndpoints()
 }
