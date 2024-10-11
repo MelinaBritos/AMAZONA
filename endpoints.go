@@ -55,12 +55,20 @@ func EndpointsVehiculo(r *mux.Router)  {
 	//HANDLERS VEHICULO
 	r.HandleFunc("/vehiculos", rutas.GetVehiculosHandler).Methods("GET")
 	r.HandleFunc("/vehiculos/{id}", rutas.GetVehiculoHandler).Methods("GET")
+	r.HandleFunc("/vehiculos/marcas", rutas.GetMarcasVehiculoHandler).Methods("GET")
+	r.HandleFunc("/vehiculos/marcas/modelos", rutas.GetModelosVehiculoHandler).Methods("GET")
 	r.HandleFunc("/vehiculos", rutas.PostVehiculoHandler).Methods("POST")
+	//HANDLERS TICKET
+	r.HandleFunc("/ticket", rutas.GetTicketsHandler).Methods("GET")
+	r.HandleFunc("/ticket/{id}", rutas.GetTicketHandler).Methods("GET")
+	r.HandleFunc("/ticket", rutas.PostTicketHandler).Methods("POST")
+	//falta put ticket
+
 }
 
-func EndpointsProveedores(r *mux.Router)  {
+func EndpointsProveedores(r *mux.Router) {
 	// HANDLERS PROOVEDOR
-	r.HandleFunc("/proveedor/{id}", rutasProveedor.GetProveedorHandler).Methods("GET")
+	r.HandleFunc("/proveedor/{id_proveedor}", rutasProveedor.GetProveedorHandler).Methods("GET")
 	r.HandleFunc("/proveedor", rutasProveedor.GetProveedoresHandler).Methods("GET")
 	r.HandleFunc("/proveedor", rutasProveedor.PutProveedorHandler).Methods("PUT")   //Modificar datos de algun usuario
 	r.HandleFunc("/proveedor", rutasProveedor.PostProveedorHandler).Methods("POST") //crear un usuario

@@ -6,6 +6,7 @@ import (
 
 	"github.com/MelinaBritos/TP-Principal-AMAZONA/Proveedor/modelosProveedor"
 	"github.com/MelinaBritos/TP-Principal-AMAZONA/baseDeDatos"
+	"github.com/gorilla/mux"
 )
 
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
@@ -14,12 +15,28 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 
 func GetProveedoresHandler(w http.ResponseWriter, r *http.Request) {
 	//aca va la logica para obtener los proveedores
-	w.Write([]byte("ola mundo proveedores"))
+	var proveedores []modelosProveedor.Proveedor
+	baseDeDatos.DB.Find(&proveedores)
+	json.NewEncoder(w).Encode(&proveedores)
+
 }
 
 func GetProveedorHandler(w http.ResponseWriter, r *http.Request) {
 	//aca va la logica para obtener un solo proveedor
-	w.Write([]byte("ola mundo proveedor"))
+	//w.Write([]byte("ola mundo proveedor"))
+	var proveedor modelosProveedor.Proveedor
+	params := mux.Vars(r)
+	idProveedor := params["id_proveedor"]
+
+	//baseDeDatos.DB.First(&proveedor, params["id_proveedor"])
+	baseDeDatos.DB.Where("id_proveedor = ?", idProveedor).First(&proveedor)
+
+	if proveedor.ID == 0 {
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte("El proveedor no existe"))
+		return
+	}
+	json.NewEncoder(w).Encode(&proveedor)
 }
 
 func PostProveedorHandler(w http.ResponseWriter, r *http.Request) {
