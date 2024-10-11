@@ -26,7 +26,7 @@ func GetVehiculoHandler(w http.ResponseWriter, r *http.Request) {
 
 	if vehiculo.ID == 0 {
 		w.WriteHeader(http.StatusNotFound) // error 404
-		w.Write([]byte("Producto no encontrado"))
+		w.Write([]byte("Vehiculo no encontrado"))
 		return
 	}
 
@@ -68,7 +68,7 @@ func PostVehiculoHandler(w http.ResponseWriter, r *http.Request) {
 func validarVehiculo(vehiculo modelosBitacora.Vehiculo) error {
 
 	switch vehiculo.Estado {
-	case "NO APTO PARA CIRCULAR", "APTO PARA CIRCULAR", "EN VIAJE", "EN REPARACION", "MANTENIMIENTO", "DESHABILITADO":
+	case "NO APTO PARA CIRCULAR", "APTO PARA CIRCULAR", "EN VIAJE", "REPARACION", "MANTENIMIENTO", "DESHABILITADO":
 	default:
 		return errors.New("estado invalido")
 	}
