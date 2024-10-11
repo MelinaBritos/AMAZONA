@@ -23,12 +23,10 @@ func GetProveedoresHandler(w http.ResponseWriter, r *http.Request) {
 
 func GetProveedorHandler(w http.ResponseWriter, r *http.Request) {
 	//aca va la logica para obtener un solo proveedor
-	//w.Write([]byte("ola mundo proveedor"))
 	var proveedor modelosProveedor.Proveedor
 	params := mux.Vars(r)
 	idProveedor := params["id_proveedor"]
 
-	//baseDeDatos.DB.First(&proveedor, params["id_proveedor"])
 	baseDeDatos.DB.Where("id_proveedor = ?", idProveedor).First(&proveedor)
 
 	if proveedor.ID == 0 {
@@ -41,11 +39,15 @@ func GetProveedorHandler(w http.ResponseWriter, r *http.Request) {
 
 func PostProveedorHandler(w http.ResponseWriter, r *http.Request) {
 	//aca va la logica para agregar un nuevo proveedor
-	//w.Write([]byte("ola mundo post proveedor"))
 	var proveedor modelosProveedor.Proveedor
 
 	if err := json.NewDecoder(r.Body).Decode(&proveedor); err != nil {
 		http.Error(w, "Error al decodificar el proveedor: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if err := validarProveedor(proveedor); err != nil {
+		http.Error(w, "Datos del proveedor invalidos: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
