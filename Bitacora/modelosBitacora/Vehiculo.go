@@ -16,4 +16,6 @@ type Vehiculo struct {
 	PesoAdmitido              float32 `gorm:"not null"`
 	VolumenAdmitidoMtsCubicos float32 `gorm:"not null"`
 	KmRecorridos              int
+	EstadoVTV                 string `gorm:"not null"`
+	FechaVTV                  string `gorm:"not null"`
 }
