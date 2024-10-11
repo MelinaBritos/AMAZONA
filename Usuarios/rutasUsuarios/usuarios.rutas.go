@@ -117,7 +117,7 @@ func EditarUsuario(w http.ResponseWriter, r *http.Request) {
 	err = baseDeDatos.DB.Model(&usuario).Where("username = ?", username).Updates(&usuario).Error
 
 	if err != nil {
-		http.Error(w, "Hubo un problema de actualizacion", http.StatusBadRequest)
+		http.Error(w, "Hubo un problema de actualizacion", http.StatusInternalServerError)
 		return
 	}
 
@@ -180,7 +180,7 @@ func EliminarUsuario(w http.ResponseWriter, r *http.Request) {
 	err := baseDeDatos.DB.Where("username = ?", username).Unscoped().Delete(&usuario).Error
 
 	if err != nil {
-		http.Error(w, "Hubo un problema de eliminacion", http.StatusBadRequest)
+		http.Error(w, "Hubo un problema de eliminacion", http.StatusInternalServerError)
 		return
 	}
 
