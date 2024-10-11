@@ -34,12 +34,12 @@ func GetVehiculoHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func GetMarcasVehiculo(w http.ResponseWriter, r *http.Request) {
+func GetMarcasVehiculoHandler(w http.ResponseWriter, r *http.Request) {
 	marcas := []string{"Fiat", "Renault", "Peugeot", "Citroën", "Volkswagen", "Ford", "Nissan", "Toyota", "Mercedes-Benz"}
 	json.NewEncoder(w).Encode(&marcas)
 }
 
-func GetModelosVehiculo(w http.ResponseWriter, r *http.Request) {
+func GetModelosVehiculoHandler(w http.ResponseWriter, r *http.Request) {
 	parametros := mux.Vars(r)
 
 	switch parametros["marca"] {
