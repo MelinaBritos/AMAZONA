@@ -171,6 +171,40 @@ func CrearUsuario(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(prettyJSON))
 }
 
+func CrearUsuarios(w http.ResponseWriter, r *http.Request){
+
+	var usuarios []Usuario
+
+	if err := json.NewDecoder(r.Body).Decode(&usuarios); err != nil {
+		http.Error(w, "Error al decodificar los usuarios: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	for _, usuario := range usuarios {
+		if err := verificarAtributos(usuario.Clave, usuario.Dni, usuario.Nombre,usuario.Apellido); err != nil {
+			http.Error(w, "usuario inválido", http.StatusBadRequest)
+			return
+		}
+	}
+
+	tx := baseDeDatos.DB.Begin()
+	for _, usuario := range usuarios {
+
+		usuarioCreado := tx.Create(&usuario)
+
+		err := usuarioCreado.Error
+		if err != nil {
+			tx.Rollback()
+			http.Error(w, "Error al crear los usuarios: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+
+	tx.Commit()
+	w.WriteHeader(http.StatusOK)
+
+}
+
 func EliminarUsuario(w http.ResponseWriter, r *http.Request) {
 	var usuario Usuario
 
