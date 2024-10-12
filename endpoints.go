@@ -6,7 +6,6 @@ import (
 	"os"
 
 	"github.com/MelinaBritos/TP-Principal-AMAZONA/Bitacora/rutas"
-	"github.com/MelinaBritos/TP-Principal-AMAZONA/Proveedor/rutasProveedor"
 	"github.com/joho/godotenv"
 
 	rutasUsuarios "github.com/MelinaBritos/TP-Principal-AMAZONA/Usuarios/rutasUsuarios"
@@ -17,7 +16,6 @@ import (
 func GenerarEndpoints() {
 
 	r := mux.NewRouter()
-
 
 	port, err := CargarPuerto()
 
@@ -49,7 +47,9 @@ func CargarPuertoV2() (string, error) {
 		return port, fmt.Errorf("no existe el puerto")
 	}
 	return port, nil
+	
 }
+
 
 func EndpointsVehiculo(r *mux.Router)  {
 	//HANDLERS VEHICULO
@@ -63,15 +63,6 @@ func EndpointsVehiculo(r *mux.Router)  {
 	r.HandleFunc("/ticket/{id}", rutas.GetTicketHandler).Methods("GET")
 	r.HandleFunc("/ticket", rutas.PostTicketHandler).Methods("POST")
 	//falta put ticket
-
-}
-
-func EndpointsProveedores(r *mux.Router) {
-	// HANDLERS PROOVEDOR
-	r.HandleFunc("/proveedor/{id_proveedor}", rutasProveedor.GetProveedorHandler).Methods("GET")
-	r.HandleFunc("/proveedor", rutasProveedor.GetProveedoresHandler).Methods("GET")
-	r.HandleFunc("/proveedor", rutasProveedor.PutProveedorHandler).Methods("PUT")   //Modificar datos de algun usuario
-	r.HandleFunc("/proveedor", rutasProveedor.PostProveedorHandler).Methods("POST") //crear un usuario
 
 }
 

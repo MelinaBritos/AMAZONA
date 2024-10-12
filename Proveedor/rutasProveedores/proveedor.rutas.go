@@ -5,30 +5,26 @@ import (
 	"net/http"
 
 	"github.com/MelinaBritos/TP-Principal-AMAZONA/Proveedor/modelosProveedor"
+	"github.com/MelinaBritos/TP-Principal-AMAZONA/Proveedor/validaciones"
 	"github.com/MelinaBritos/TP-Principal-AMAZONA/baseDeDatos"
 	"github.com/gorilla/mux"
 )
-
-func HomeHandler(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("ola mundo"))
-}
 
 func GetProveedoresHandler(w http.ResponseWriter, r *http.Request) {
 	//aca va la logica para obtener los proveedores
 	var proveedores []modelosProveedor.Proveedor
 	baseDeDatos.DB.Find(&proveedores)
 	json.NewEncoder(w).Encode(&proveedores)
+	w.Header().Set("Content-Type", "application/json")
 
 }
 
 func GetProveedorHandler(w http.ResponseWriter, r *http.Request) {
 	//aca va la logica para obtener un solo proveedor
-	//w.Write([]byte("ola mundo proveedor"))
 	var proveedor modelosProveedor.Proveedor
 	params := mux.Vars(r)
 	idProveedor := params["id_proveedor"]
 
-	//baseDeDatos.DB.First(&proveedor, params["id_proveedor"])
 	baseDeDatos.DB.Where("id_proveedor = ?", idProveedor).First(&proveedor)
 
 	if proveedor.ID == 0 {
@@ -41,11 +37,15 @@ func GetProveedorHandler(w http.ResponseWriter, r *http.Request) {
 
 func PostProveedorHandler(w http.ResponseWriter, r *http.Request) {
 	//aca va la logica para agregar un nuevo proveedor
-	//w.Write([]byte("ola mundo post proveedor"))
 	var proveedor modelosProveedor.Proveedor
 
 	if err := json.NewDecoder(r.Body).Decode(&proveedor); err != nil {
 		http.Error(w, "Error al decodificar el proveedor: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if err := validaciones.ValidarProveedor(proveedor); err != nil {
+		http.Error(w, "Datos del proveedor invalidos: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 

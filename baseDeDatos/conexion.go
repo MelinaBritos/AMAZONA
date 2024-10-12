@@ -2,6 +2,7 @@ package baseDeDatos
 
 import (
 	"fmt"
+	"fmt"
 	"log"
 	"os"
 
@@ -55,6 +56,8 @@ func ObtenerDSN() (string, error) {
 func CrearTablas() {
 
 	DB.AutoMigrate(modelosProveedor.Proveedor{})
+	DB.AutoMigrate(modelosProveedor.Catalogo{})
+	DB.AutoMigrate(modelosProveedor.Repuesto{})
 	DB.AutoMigrate(modelosBitacora.Vehiculo{})
 	DB.AutoMigrate(modelosUsuarios.Usuario{})
 	DB.AutoMigrate(modelosBitacora.Ticket{})
