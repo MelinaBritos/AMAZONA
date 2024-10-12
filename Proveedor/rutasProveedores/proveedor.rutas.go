@@ -5,19 +5,17 @@ import (
 	"net/http"
 
 	"github.com/MelinaBritos/TP-Principal-AMAZONA/Proveedor/modelosProveedor"
+	"github.com/MelinaBritos/TP-Principal-AMAZONA/Proveedor/validaciones"
 	"github.com/MelinaBritos/TP-Principal-AMAZONA/baseDeDatos"
 	"github.com/gorilla/mux"
 )
-
-func HomeHandler(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("ola mundo"))
-}
 
 func GetProveedoresHandler(w http.ResponseWriter, r *http.Request) {
 	//aca va la logica para obtener los proveedores
 	var proveedores []modelosProveedor.Proveedor
 	baseDeDatos.DB.Find(&proveedores)
 	json.NewEncoder(w).Encode(&proveedores)
+	w.Header().Set("Content-Type", "application/json")
 
 }
 
@@ -46,7 +44,7 @@ func PostProveedorHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := validarProveedor(proveedor); err != nil {
+	if err := validaciones.ValidarProveedor(proveedor); err != nil {
 		http.Error(w, "Datos del proveedor invalidos: "+err.Error(), http.StatusBadRequest)
 		return
 	}
