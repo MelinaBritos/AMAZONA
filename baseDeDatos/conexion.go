@@ -2,7 +2,6 @@ package baseDeDatos
 
 import (
 	"fmt"
-	"fmt"
 	"log"
 	"os"
 
