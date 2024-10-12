@@ -16,7 +16,7 @@ func ValidarCatalogo(catalogo modelosProveedor.Catalogo) error {
 	}
 
 	if !existeProveedor(catalogo.Id_proveedor) {
-		return fmt.Errorf("no existe el proveedor %d", catalogo.Id_catalogo)
+		return fmt.Errorf("no existe el catalogo %d", catalogo.Id_catalogo)
 	}
 
 	if err := validarMesVigencia(catalogo.Mes_vigencia); err != nil {
