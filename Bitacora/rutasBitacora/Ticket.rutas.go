@@ -1,4 +1,4 @@
-package rutas
+package rutasBitacora
 
 import (
 	"encoding/json"
@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/MelinaBritos/TP-Principal-AMAZONA/Bitacora/modelosBitacora"
-	"github.com/MelinaBritos/TP-Principal-AMAZONA/Usuarios/modelosUsuarios"
+	"github.com/MelinaBritos/TP-Principal-AMAZONA/Usuario/modelosUsuario"
 	"github.com/MelinaBritos/TP-Principal-AMAZONA/baseDeDatos"
 	"github.com/gorilla/mux"
 )
@@ -86,7 +86,7 @@ func validarTicket(ticket modelosBitacora.Ticket) error {
 	default:
 		return errors.New("tipo invalido")
 	}
-	var usuario modelosUsuarios.Usuario
+	var usuario modelosUsuario.Usuario
 	err := baseDeDatos.DB.Where("username = ?", ticket.Username).First(&usuario).Error
 	if err != nil {
 		return errors.New("error al encontrar usuario " + err.Error())

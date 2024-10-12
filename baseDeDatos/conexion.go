@@ -7,7 +7,7 @@ import (
 
 	"github.com/MelinaBritos/TP-Principal-AMAZONA/Bitacora/modelosBitacora"
 	"github.com/MelinaBritos/TP-Principal-AMAZONA/Proveedor/modelosProveedor"
-	"github.com/MelinaBritos/TP-Principal-AMAZONA/Usuarios/modelosUsuarios"
+	"github.com/MelinaBritos/TP-Principal-AMAZONA/Usuario/modelosUsuario"
 	"github.com/joho/godotenv"
 
 	"gorm.io/driver/postgres"
@@ -57,7 +57,7 @@ func CrearTablas() {
 	DB.AutoMigrate(modelosProveedor.Catalogo{})
 	DB.AutoMigrate(modelosProveedor.Repuesto{})
 	DB.AutoMigrate(modelosBitacora.Vehiculo{})
-	DB.AutoMigrate(modelosUsuarios.Usuario{})
+	DB.AutoMigrate(modelosUsuario.Usuario{})
 	DB.AutoMigrate(modelosBitacora.Ticket{})
 
 }
