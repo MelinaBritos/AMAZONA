@@ -8,7 +8,7 @@ import (
 	"github.com/MelinaBritos/TP-Principal-AMAZONA/Bitacora/rutas"
 	"github.com/joho/godotenv"
 
-	rutasUsuarios "github.com/MelinaBritos/TP-Principal-AMAZONA/Usuarios/rutasUsuarios"
+	"github.com/MelinaBritos/TP-Principal-AMAZONA/Usuarios/rutasUsuarios"
 	"github.com/gorilla/mux"
 )
 

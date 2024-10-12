@@ -1,4 +1,5 @@
-package rutas
+package rutasUsuarios
+
 import (
 	"golang.org/x/crypto/bcrypt"
 )
@@ -6,7 +7,7 @@ import (
 func Encriptar(contraseña string) (string, error) {
 
 	hashed, err := bcrypt.GenerateFromPassword([]byte(contraseña), 4)
-	
+
 	if err != nil {
 		return "", err
 	}
@@ -15,7 +16,7 @@ func Encriptar(contraseña string) (string, error) {
 	return value, nil
 }
 
-func Equals(contraseña string, hashed string) error  {
+func Equals(contraseña string, hashed string) error {
 	err := bcrypt.CompareHashAndPassword([]byte(hashed), []byte(contraseña))
 	return err
 }

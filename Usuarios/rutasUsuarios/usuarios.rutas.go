@@ -1,4 +1,4 @@
-package rutas
+package rutasUsuarios
 
 import (
 	"encoding/json"
