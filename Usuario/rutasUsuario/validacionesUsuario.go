@@ -1,4 +1,4 @@
-package rutasUsuarios
+package rutasUsuario
 
 import "errors"
 

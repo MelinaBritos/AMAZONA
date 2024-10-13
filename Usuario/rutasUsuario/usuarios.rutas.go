@@ -1,18 +1,18 @@
-package rutasUsuarios
+package rutasUsuario
 
 import (
 	"encoding/json"
 	"errors"
 	"net/http"
 
-	"github.com/MelinaBritos/TP-Principal-AMAZONA/Usuarios/modelosUsuarios"
+	"github.com/MelinaBritos/TP-Principal-AMAZONA/Usuario/modelosUsuario"
 	"github.com/MelinaBritos/TP-Principal-AMAZONA/baseDeDatos"
 	"github.com/gorilla/mux"
 	"gorm.io/gorm"
 )
 
-type Usuario = modelosUsuarios.Usuario
-type Credencial = modelosUsuarios.Credencial
+type Usuario = modelosUsuario.Usuario
+type Credencial = modelosUsuario.Credencial
 
 func GetUsuariosHandler(w http.ResponseWriter, r *http.Request) {
 

@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/MelinaBritos/TP-Principal-AMAZONA/baseDeDatos"
+	"github.com/MelinaBritos/TP-Principal-AMAZONA/endpoints"
 )
 
 func main() {
@@ -9,5 +10,5 @@ func main() {
 	baseDeDatos.Conexiondb()
 	baseDeDatos.CrearTablas()
 
-	GenerarEndpoints()
+	endpoints.GenerarEndpoints()
 }
