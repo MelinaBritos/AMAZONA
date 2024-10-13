@@ -34,21 +34,22 @@ func Conexiondb() {
 	}
 }
 
-func ObtenerDSNV2() (string, error) {
+func ObtenerDSNV2() (string, error){
 	dsn := os.Getenv("DSN")
-	if dsn == "" {
-		return "", fmt.Errorf("la variable de entorno 'DSN' no está configurada")
-	}
-	return dsn, nil
+    if dsn == "" {
+        return "", fmt.Errorf("la variable de entorno 'DSN' no está configurada")
+    }
+    return dsn, nil
 }
 func ObtenerDSN() (string, error) {
-
+	
 	err := godotenv.Load(".env.example")
 	if err != nil {
 		return os.Getenv("DSN"), err
 	}
 	return os.Getenv("DSN"), nil
 
+	
 }
 
 func CrearTablas() {
