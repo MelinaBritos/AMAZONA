@@ -1,4 +1,4 @@
-package modelosUsuarios
+package modelosUsuario
 
 import "gorm.io/gorm"
 

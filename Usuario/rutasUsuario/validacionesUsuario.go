@@ -1,4 +1,4 @@
-package rutas
+package rutasUsuario
 
 import "errors"
 
@@ -27,13 +27,12 @@ func verificarAtributos(clave string, dni string, nombre string, apellido string
 		appendError(err)
 	}
 
-
 	err = verificarcontraseña(clave)
 
 	if err != nil {
 		appendError(err)
 	}
-	
+
 	return errorList
 }
 
@@ -64,7 +63,7 @@ func verificarApellido(apellido string) error {
 	return nil
 }
 
-func verificarcontraseña(clave string) error{
+func verificarcontraseña(clave string) error {
 	if len(clave) < 3 {
 		err := errors.New("el username debe tener al menos 3 caracteres")
 		return err
@@ -72,13 +71,13 @@ func verificarcontraseña(clave string) error{
 	return nil
 }
 
-func DefinirUsername(usuario Usuario) Usuario{
+func DefinirUsername(usuario Usuario) Usuario {
 
 	usuario.Username = usuario.Nombre + usuario.Dni
 	return usuario
 }
 
-func NoExisteNingunCampo(usuario Usuario) bool  {
+func NoExisteNingunCampo(usuario Usuario) bool {
 	return usuario.Clave == "" && usuario.Nombre == "" && usuario.Apellido == "" && usuario.Dni == "" && usuario.Rol == ""
 }
 

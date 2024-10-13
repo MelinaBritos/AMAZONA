@@ -1,4 +1,4 @@
-package rutas
+package rutasBitacora
 
 import (
 	"encoding/json"

@@ -10,5 +10,5 @@ type Proveedor struct {
 	Id_proveedor   int    `gorm:"unique;not null"`
 	Nombre_empresa string `gorm:"not null"`
 	Mail           string `gorm:"not null"`
-	Telefono       int    `gorm:"not null"`
+	Telefono       string `gorm:"not null"`
 }
