@@ -107,7 +107,7 @@ func EditarUsuario(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Debe proporcionar al menos un dato para actualizar", http.StatusBadRequest)
 	}
 
-	errors := VerificarCamposExistentes(usuario)
+	errors := verificarAtributos(usuario, SOFT)
 
 	if len(errors) != 0 {
 		http.Error(w, "Algun campo es invalido", http.StatusBadRequest)
@@ -137,7 +137,7 @@ func CrearUsuario(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	errors := verificarAtributos(usuario.Clave, usuario.Dni, usuario.Nombre, usuario.Apellido)
+	errors := verificarAtributos(usuario, HARD)
 
 	if len(errors) != 0 {
 		http.Error(w, errors[0].Error(), http.StatusInternalServerError)
@@ -181,7 +181,7 @@ func CrearUsuarios(w http.ResponseWriter, r *http.Request){
 	}
 
 	for _, usuario := range usuarios {
-		if err := verificarAtributos(usuario.Clave, usuario.Dni, usuario.Nombre,usuario.Apellido); err != nil {
+		if err := verificarAtributos(usuario, HARD); err != nil {
 			http.Error(w, "usuario inválido", http.StatusBadRequest)
 			return
 		}
