@@ -24,9 +24,9 @@ func ValidarProveedor(proveedor modelosProveedor.Proveedor) error {
 		return err
 	}
 
-	// if err := validarTelefono(proveedor.Telefono); err != nil {
-	// 	return err
-	// }
+	if err := validarTelefono(proveedor.Telefono); err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -67,12 +67,13 @@ func validarMail(mail string) error {
 	return nil
 }
 
-// func validarTelefono(telefono string) error {
-// 	// Expresión regular para teléfonos internacionales en formato E.164
-// 	telefonoValido := regexp.MustCompile(`^\+[1-9]\d{1,14}$`)
+func validarTelefono(telefono string) error {
 
-// 	if !telefonoValido.MatchString(telefono) {
-// 		return errors.New("número de teléfono invalido")
-// 	}
-// 	return nil
-// }
+	// Expresión regular para teléfonos internacionales en formato E.164
+	telefonoValido := regexp.MustCompile(`^\+[1-9]\d{1,14}$`)
+
+	if !telefonoValido.MatchString(telefono) {
+		return errors.New("número de teléfono invalido")
+	}
+	return nil
+}
