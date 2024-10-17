@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"regexp"
+	"time"
 
 	"github.com/MelinaBritos/TP-Principal-AMAZONA/Bitacora/modelosBitacora"
 	"github.com/MelinaBritos/TP-Principal-AMAZONA/baseDeDatos"
@@ -94,6 +95,7 @@ func PostVehiculoHandler(w http.ResponseWriter, r *http.Request) {
 
 	tx := baseDeDatos.DB.Begin()
 	for _, vehiculo := range vehiculos {
+		vehiculo.FechaIngreso = time.Now().Format("02-01-2006")
 		vehiculoCreado := tx.Create(&vehiculo)
 
 		err := vehiculoCreado.Error
@@ -108,6 +110,53 @@ func PostVehiculoHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
+func PutVehiculoHandler(w http.ResponseWriter, r *http.Request) {
+	var vehiculo modelosBitacora.Vehiculo
+	var vehiculoInput modelosBitacora.Vehiculo
+
+	if err := json.NewDecoder(r.Body).Decode(&vehiculoInput); err != nil {
+		http.Error(w, "Error al decodificar el vehículo: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if err := validarVehiculo(vehiculoInput); err != nil {
+		http.Error(w, "Vehiculo inválido: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	tx := baseDeDatos.DB.Begin()
+	if err := tx.First(&vehiculo, "matricula = ?", vehiculoInput.Matricula).Error; err != nil {
+		http.Error(w, "Vehículo no encontrado: "+err.Error(), http.StatusNotFound)
+		return
+	}
+
+	if err := tx.Model(&vehiculo).Updates(vehiculoInput).Error; err != nil {
+		tx.Rollback()
+		http.Error(w, "Error al actualizar el vehículo: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	tx.Commit()
+	w.WriteHeader(http.StatusOK)
+}
+
+func DeleteVehiculoHandler(w http.ResponseWriter, r *http.Request) {
+	var vehiculo modelosBitacora.Vehiculo
+	parametros := mux.Vars(r)
+
+	baseDeDatos.DB.First(&vehiculo, parametros["id"])
+
+	if vehiculo.ID == 0 {
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte("Vehiculo no encontrado"))
+		return
+	}
+
+	baseDeDatos.DB.Unscoped().Delete(&vehiculo)
+	w.WriteHeader(http.StatusOK)
+
+}
+
 func validarVehiculo(vehiculo modelosBitacora.Vehiculo) error {
 
 	switch vehiculo.Estado {
@@ -120,6 +169,19 @@ func validarVehiculo(vehiculo modelosBitacora.Vehiculo) error {
 	default:
 		return errors.New("estado de VTV invalido")
 	}
+
+	Ahora := time.Now()
+	UnAñoAtras := Ahora.AddDate(-1, 0, 0)
+	layout := "02-01-2006"
+	FechaVTV, err := time.Parse(layout, vehiculo.FechaVTV)
+	if err != nil {
+		return errors.New("la fecha de la VTV no cumple el formato dd-mm-yyyy")
+	}
+
+	if (FechaVTV).Before(UnAñoAtras) && vehiculo.EstadoVTV == "APROBADA" {
+		return errors.New("la vtv esta vencida")
+	}
+
 	switch vehiculo.Marca {
 	case "Fiat", "Renault", "Peugeot", "Citroën", "Volkswagen", "Ford", "Nissan", "Toyota", "Mercedes-Benz":
 	default:
