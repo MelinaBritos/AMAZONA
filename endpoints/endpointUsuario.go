@@ -8,7 +8,7 @@ import (
 func EndpointsUsuario(r *mux.Router) {
 
 	r.HandleFunc("/usuarios", rutasUsuario.GetUsuariosHandler).Methods("GET")
-	r.HandleFunc("/usuarios/{username}", rutasUsuario.GetUsuarioByIdHandler).Methods("GET")
+	r.HandleFunc("/usuarios/{username}", rutasUsuario.GetUsuarioByUsernameHandler).Methods("GET")
 	r.HandleFunc("/usuarios/roles/{rol}", rutasUsuario.GetUsuariosByRolHandler).Methods("GET")
 
 	r.HandleFunc("/usuarios/{username}", rutasUsuario.EditarUsuario).Methods("PUT") //Modificar datos de algun usuario

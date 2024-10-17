@@ -73,3 +73,13 @@ func CrearFKS() {
 	DB.Exec(query)
 
 }
+
+func CrearFKS() {
+
+	query := `
+    ALTER TABLE tickets ADD CONSTRAINT matriculaFK FOREIGN KEY (matricula) REFERENCES vehiculos(matricula);
+    ALTER TABLE tickets ADD CONSTRAINT usernameFK FOREIGN KEY (username) REFERENCES usuarios(username);
+    `
+	DB.Exec(query)
+
+}

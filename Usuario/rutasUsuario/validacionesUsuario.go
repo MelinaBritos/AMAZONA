@@ -13,6 +13,19 @@ const (
 )
 
 func verificarAtributos(usuario Usuario, comparator COMPARATOR) []error {
+import (
+	"errors"
+	"regexp"
+)
+
+type COMPARATOR string
+
+const (
+	SOFT COMPARATOR = "SOFT"
+	HARD COMPARATOR = "HARD"
+)
+
+func verificarAtributos(usuario Usuario, comparator COMPARATOR) []error {
 
 	var errorList []error
 
@@ -82,7 +95,7 @@ func verificarNombre(nombre string) error {
 func verificarApellido(apellido string) error {
 
 	if !tieneSoloLetras(apellido) {
-		return errors.New("el nombre no puede contener numeros ni caracteres especiales")
+		return errors.New("el apellido no puede contener numeros ni caracteres especiales")
 	}
 
 	if len(apellido) < 3 {
