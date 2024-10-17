@@ -13,19 +13,6 @@ const (
 )
 
 func verificarAtributos(usuario Usuario, comparator COMPARATOR) []error {
-import (
-	"errors"
-	"regexp"
-)
-
-type COMPARATOR string
-
-const (
-	SOFT COMPARATOR = "SOFT"
-	HARD COMPARATOR = "HARD"
-)
-
-func verificarAtributos(usuario Usuario, comparator COMPARATOR) []error {
 
 	var errorList []error
 
