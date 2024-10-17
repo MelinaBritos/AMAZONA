@@ -8,6 +8,6 @@ import (
 func main() {
 
 	baseDeDatos.Conexiondb()
-	baseDeDatos.CrearTablas()
+	//baseDeDatos.CrearTablas()
 	endpoints.GenerarEndpoints()
 }
