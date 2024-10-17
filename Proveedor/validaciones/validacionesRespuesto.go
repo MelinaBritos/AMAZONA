@@ -106,7 +106,7 @@ func validarCosto(costo float32) error {
 
 func validarDescripcion(descripcion string) error {
 
-	if len(descripcion) > 50 {
+	if len(descripcion) > 100 {
 		return errors.New("descripcion demasiado larga")
 	}
 

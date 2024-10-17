@@ -16,4 +16,5 @@ type Ticket struct {
 	CostoTotal            float32
 	DescripcionReparacion string
 	FechaFinalizacion     string
+	//Repuestos             []RepuestoUtilizado
 }
