@@ -7,7 +7,6 @@ import (
 type Repuesto struct {
 	gorm.Model
 
-	Id_repuesto        int    `gorm:"unique;not null"`
 	Id_catalogo        int    `gorm:"not null"`
 	Nombre             string `gorm:"not null"`
 	Stock              int

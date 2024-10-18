@@ -10,10 +10,6 @@ import (
 
 func ValidarRepuesto(repuesto modelosProveedor.Repuesto) error {
 
-	if err := validarIdRepuesto(repuesto.Id_repuesto); err != nil {
-		return err
-	}
-
 	if !existeCatalogo(repuesto.Id_catalogo) {
 		return fmt.Errorf("no existe el catalogo %d", repuesto.Id_catalogo)
 	}
@@ -46,26 +42,12 @@ func ValidarRepuesto(repuesto modelosProveedor.Repuesto) error {
 
 }
 
-func validarIdRepuesto(id_repuesto int) error {
-
-	if id_repuesto < 0 {
-		return errors.New("el ID no puede ser negativo")
-	}
-
-	var repuesto modelosProveedor.Repuesto
-	if err := baseDeDatos.DB.Where("id_repuesto = ?", id_repuesto).First(&repuesto); err != nil {
-		return errors.New("el ID ya se encuentra en uso por otro repuesto")
-	}
-
-	return nil
-}
-
 func existeCatalogo(id_catalogo int) bool {
 
 	var catalogo modelosProveedor.Catalogo
-	baseDeDatos.DB.Where("id_catalogo = ?", id_catalogo).First(&catalogo)
+	baseDeDatos.DB.Where("id = ?", id_catalogo).First(&catalogo)
 
-	return catalogo.Id_catalogo != 0
+	return catalogo.ID != 0
 }
 
 func validarStock(stock int) error {
