@@ -74,6 +74,23 @@ func PostTicketHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
+func DeleteTicketHandler(w http.ResponseWriter, r *http.Request) {
+	var ticket modelosBitacora.Ticket
+	parametros := mux.Vars(r)
+
+	baseDeDatos.DB.First(&ticket, parametros["id"])
+
+	if ticket.ID == 0 {
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte("Ticket no encontrado"))
+		return
+	}
+
+	baseDeDatos.DB.Unscoped().Delete(&ticket)
+	w.WriteHeader(http.StatusOK)
+
+}
+
 func validarTicket(ticket modelosBitacora.Ticket) error {
 
 	switch ticket.Estado {

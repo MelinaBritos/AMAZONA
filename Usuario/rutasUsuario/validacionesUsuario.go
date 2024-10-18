@@ -25,7 +25,7 @@ func verificarAtributos(usuario Usuario, comparator COMPARATOR) []error {
 	if comparator != SOFT {
 		hardvalidation(usuario, appendError)
 	} else {
-		softvalidation(appendError, usuario)	
+		softvalidation(appendError, usuario)
 	}
 
 	return errorList

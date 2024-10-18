@@ -12,12 +12,8 @@ import (
 
 func ValidarCatalogo(catalogo modelosProveedor.Catalogo) error {
 
-	if err := validarIdCatalogo(catalogo.Id_catalogo); err != nil {
-		return err
-	}
-
 	if !existeProveedor(catalogo.Id_proveedor) {
-		return fmt.Errorf("no existe el catalogo %d", catalogo.Id_catalogo)
+		return fmt.Errorf("no existe el proveedor %d", catalogo.Id_proveedor)
 	}
 
 	if err := validarMesVigencia(catalogo.Mes_vigencia); err != nil {
@@ -27,27 +23,12 @@ func ValidarCatalogo(catalogo modelosProveedor.Catalogo) error {
 	return nil
 }
 
-func validarIdCatalogo(id_catalogo int) error {
-
-	if id_catalogo <= 0 {
-		return errors.New("el ID no puede ser negativo")
-	}
-
-	var catalogo modelosProveedor.Catalogo
-	catalogoResultado := baseDeDatos.DB.Where("id_catalogo = ?", id_catalogo).First(&catalogo)
-	if catalogoResultado.RowsAffected > 0 { //esta funcion calcula la cantidad de ocurrencias de la consulta
-		return fmt.Errorf("el catalogo con id %d ya existe", id_catalogo)
-	}
-
-	return nil
-}
-
 func existeProveedor(id_proveedor int) bool {
 
 	var proveedor modelosProveedor.Proveedor
-	baseDeDatos.DB.Where("id_proveedor = ?", id_proveedor).First(&proveedor)
+	baseDeDatos.DB.Where("id = ?", id_proveedor).First(&proveedor)
 
-	return proveedor.Id_proveedor != 0
+	return proveedor.ID != 0
 }
 
 func validarMesVigencia(mes_vigencia string) error {
@@ -59,7 +40,7 @@ func validarMesVigencia(mes_vigencia string) error {
 	fechaActual := time.Now()
 
 	//se valida que se ingrese un valor numerico para el mes
-	mesStr := mes_vigencia[:2]
+	mesStr := mes_vigencia[5:]
 	mesInt, err := strconv.Atoi(mesStr)
 	if err != nil {
 		return errors.New("error al ingresar el mes. intente nuevamente")
@@ -74,7 +55,7 @@ func validarMesVigencia(mes_vigencia string) error {
 	}
 
 	//se valida que se ingrese un valor numerico para el a;o
-	anioStr := mes_vigencia[3:]
+	anioStr := mes_vigencia[:4]
 	anioInt, err := strconv.Atoi(anioStr)
 	if err != nil {
 		return errors.New("error al ingresar el año. Intente nuevamente")
@@ -86,7 +67,7 @@ func validarMesVigencia(mes_vigencia string) error {
 	}
 
 	//se valida el separador
-	if separadorStr := string(mes_vigencia[2]); separadorStr != "/" {
+	if separadorStr := string(mes_vigencia[4]); separadorStr != "/" {
 		return fmt.Errorf("separador %s invalido. El separador valido es '/'", separadorStr)
 	}
 

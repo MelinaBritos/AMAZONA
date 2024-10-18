@@ -3,6 +3,7 @@ package rutasUsuario
 import (
 	"encoding/json"
 	"errors"
+	
 
 	"net/http"
 
@@ -150,33 +151,40 @@ func CrearUsuarios(w http.ResponseWriter, r *http.Request){
 
 	var usuarios []Usuario
 
-	if err := json.NewDecoder(r.Body).Decode(&usuarios); err != nil {
-		http.Error(w, "Error al decodificar los usuarios: "+err.Error(), http.StatusBadRequest)
-		return
-	}
+	err := json.NewDecoder(r.Body).Decode(&usuarios);
+	if BadRequestError(w, err, "Error al decodificar los usuarios: ") {return}
 
 	for _, usuario := range usuarios {
-		if err := verificarAtributos(usuario, HARD); err != nil {
-			http.Error(w, "usuario inválido", http.StatusBadRequest)
-			return
+
+		errors := verificarAtributos(usuario, HARD)
+		if len(errors) != 0{
+			BadRequestError(w, errors[0], "Alguna informacion del usuario es incorrecta")
 		}
+		
+		
 	}
 
 	tx := baseDeDatos.DB.Begin()
 	for _, usuario := range usuarios {
 
+		usuario = DefinirUsername(usuario)
+		usuario.Clave, err = Encriptar(usuario.Clave)
+
+		StatusInternalServerError(w, err, "no se pudo encriptar la contraseña")
+
 		usuarioCreado := tx.Create(&usuario)
 
 		err := usuarioCreado.Error
+
 		if err != nil {
 			tx.Rollback()
-			http.Error(w, "Error al crear los usuarios: "+err.Error(), http.StatusInternalServerError)
+			StatusInternalServerError(w, err, "error al insertar usuario")
 			return
 		}
 	}
 
 	tx.Commit()
-	w.WriteHeader(http.StatusOK)
+	w.WriteHeader(http.StatusCreated)
 
 }
 
@@ -192,6 +200,32 @@ func EliminarUsuario(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Eliminacion exitosa!"))
+
+}
+
+func EliminarUsuarios(w http.ResponseWriter, r *http.Request){
+
+	var credenciales []Credencial
+
+	err := json.NewDecoder(r.Body).Decode(&credenciales);
+	if BadRequestError(w, err, "Error al decodificar las credenciales de los usuarios: ") {return}
+
+	tx := baseDeDatos.DB.Begin()
+
+	for _, credencial := range credenciales {
+		
+		if StatusInternalServerError(w, err, "error en la codificacion de la contraseña"){return}
+		
+		err = baseDeDatos.DB.Where(&Usuario{Username: credencial.Username}).Unscoped().Delete(Usuario{}).Error
+
+		if StatusInternalServerError(w, err, "error en la eliminacion de algun usuario"){
+			tx.Rollback()
+			return
+		}
+	}
+
+	tx.Commit()
+	w.WriteHeader(http.StatusOK)
 
 }
 
