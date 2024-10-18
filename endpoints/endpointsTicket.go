@@ -10,4 +10,5 @@ func EndpointsTicket(r *mux.Router) {
 	r.HandleFunc("/ticket", rutasBitacora.GetTicketsHandler).Methods("GET")
 	r.HandleFunc("/ticket/{id}", rutasBitacora.GetTicketHandler).Methods("GET")
 	r.HandleFunc("/ticket", rutasBitacora.PostTicketHandler).Methods("POST")
+	r.HandleFunc("/ticket/{id}", rutasBitacora.DeleteTicketHandler).Methods("DELETE")
 }

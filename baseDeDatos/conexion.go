@@ -59,5 +59,17 @@ func CrearTablas() {
 	DB.AutoMigrate(modelosBitacora.Vehiculo{})
 	DB.AutoMigrate(modelosUsuario.Usuario{})
 	DB.AutoMigrate(modelosBitacora.Ticket{})
+	DB.AutoMigrate(modelosBitacora.RepuestoUtilizado{})
+
+}
+
+func CrearFKS() {
+
+	query := `
+    ALTER TABLE tickets ADD CONSTRAINT matriculaFK FOREIGN KEY (matricula) REFERENCES vehiculos(matricula);
+    ALTER TABLE tickets ADD CONSTRAINT usernameFK FOREIGN KEY (username) REFERENCES usuarios(username);
+	ALTER TABLE repuesto_utilizados ADD CONSTRAINT id_RepuestoFK FOREIGN KEY (id_repuesto) REFERENCES repuestos(ID);
+    `
+	DB.Exec(query)
 
 }
