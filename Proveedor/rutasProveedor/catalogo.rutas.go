@@ -24,9 +24,9 @@ func GetCatalogoHandler(w http.ResponseWriter, r *http.Request) {
 	//aca va la logica para obtener un solo catalogo
 	var catalogo modelosProveedor.Catalogo
 	params := mux.Vars(r)
-	idCatalogo := params["id_catalogo"]
+	idCatalogo := params["id"]
 
-	baseDeDatos.DB.Where("id_catalogo = ?", idCatalogo).First(&catalogo)
+	baseDeDatos.DB.Where("id = ?", idCatalogo).First(&catalogo)
 
 	if catalogo.ID == 0 {
 		w.WriteHeader(http.StatusNotFound)
@@ -66,6 +66,62 @@ func PostCatalogoHandler(w http.ResponseWriter, r *http.Request) {
 
 func PutCatalogoHandler(w http.ResponseWriter, r *http.Request) {
 
-	//aca va la logica para modificar los datos de un catalogo
-	w.Write([]byte("ola mundo put catalogo"))
+	// Obtener el ID del catálogo desde los parámetros de la URL
+	var catalogoInput modelosProveedor.Catalogo
+	if err := json.NewDecoder(r.Body).Decode(&catalogoInput); err != nil {
+		http.Error(w, "Error al decodificar el catálogo: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// Asegurarse de que el ID esté presente en el cuerpo del request
+	if catalogoInput.ID == 0 {
+		http.Error(w, "ID del catálogo es requerido", http.StatusBadRequest)
+		return
+	}
+
+	// Buscar el catálogo en la base de datos por el ID
+	var catalogo modelosProveedor.Catalogo
+	if err := baseDeDatos.DB.First(&catalogo, "id = ?", catalogoInput.ID).Error; err != nil {
+		http.Error(w, "Catálogo no encontrado: "+err.Error(), http.StatusNotFound)
+		return
+	}
+
+	if err := validaciones.ValidarCatalogo(catalogoInput); err != nil {
+		http.Error(w, "Catalogo inválido: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	tx := baseDeDatos.DB.Begin()
+	if err := tx.First(&catalogo, "id = ?", catalogoInput.ID).Error; err != nil {
+		http.Error(w, "Catalogo no encontrado: "+err.Error(), http.StatusNotFound)
+		return
+	}
+
+	if err := tx.Model(&catalogo).Updates(catalogoInput).Error; err != nil {
+		tx.Rollback()
+		http.Error(w, "Error al actualizar el catalogo: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	tx.Commit()
+	w.Write([]byte("Catalogo actualizado"))
+	w.WriteHeader(http.StatusOK)
+}
+
+func DeleteCatalogoHandler(w http.ResponseWriter, r *http.Request) {
+	var catalogo modelosProveedor.Catalogo
+	parametros := mux.Vars(r)
+
+	baseDeDatos.DB.First(&catalogo, parametros["id"])
+
+	if catalogo.ID == 0 {
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte("Catalogo no encontrado"))
+		return
+	}
+
+	baseDeDatos.DB.Unscoped().Delete(&catalogo)
+	w.Write([]byte("Catalogo borrado"))
+	w.WriteHeader(http.StatusOK)
+
 }
