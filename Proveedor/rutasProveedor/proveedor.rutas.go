@@ -65,6 +65,62 @@ func PostProveedorHandler(w http.ResponseWriter, r *http.Request) {
 
 func PutProveedorHandler(w http.ResponseWriter, r *http.Request) {
 
-	//aca va la logica para modificar los datos de un proveedor
-	w.Write([]byte("ola mundo put proveedor"))
+	// Obtener el ID del catálogo desde los parámetros de la URL
+	var proveedorInput modelosProveedor.Proveedor
+	if err := json.NewDecoder(r.Body).Decode(&proveedorInput); err != nil {
+		http.Error(w, "Error al decodificar el catálogo: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// Asegurarse de que el ID esté presente en el cuerpo del request
+	if proveedorInput.ID == 0 {
+		http.Error(w, "ID del catálogo es requerido", http.StatusBadRequest)
+		return
+	}
+
+	// Buscar el catálogo en la base de datos por el ID
+	var proveedor modelosProveedor.Proveedor
+	if err := baseDeDatos.DB.First(&proveedor, "id = ?", proveedorInput.ID).Error; err != nil {
+		http.Error(w, "Catálogo no encontrado: "+err.Error(), http.StatusNotFound)
+		return
+	}
+
+	if err := validaciones.ValidarProveedor(proveedorInput); err != nil {
+		http.Error(w, "Proveedor inválido: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	tx := baseDeDatos.DB.Begin()
+	if err := tx.First(&proveedor, "id = ?", proveedorInput.ID).Error; err != nil {
+		http.Error(w, "Proveedor no encontrado: "+err.Error(), http.StatusNotFound)
+		return
+	}
+
+	if err := tx.Model(&proveedor).Updates(proveedorInput).Error; err != nil {
+		tx.Rollback()
+		http.Error(w, "Error al actualizar el proveedor: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	tx.Commit()
+	w.Write([]byte("Proveedor actualizado"))
+	w.WriteHeader(http.StatusOK)
+}
+
+func DeleteProveedorHandler(w http.ResponseWriter, r *http.Request) {
+	var proveedor modelosProveedor.Proveedor
+	parametros := mux.Vars(r)
+
+	baseDeDatos.DB.First(&proveedor, parametros["id"])
+
+	if proveedor.ID == 0 {
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte("Proveedor no encontrado"))
+		return
+	}
+
+	baseDeDatos.DB.Unscoped().Delete(&proveedor)
+	w.Write([]byte("Proveedor borrado"))
+	w.WriteHeader(http.StatusOK)
+
 }

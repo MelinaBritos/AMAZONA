@@ -65,45 +65,62 @@ func PostRepuestoHandler(w http.ResponseWriter, r *http.Request) {
 
 func PutRepuestoHandler(w http.ResponseWriter, r *http.Request) {
 
-	params := mux.Vars(r)
-	idRepuesto := params["id_repuesto"]
+	// Obtener el ID del catálogo desde los parámetros de la URL
+	var repuestoInput modelosProveedor.Repuesto
+	if err := json.NewDecoder(r.Body).Decode(&repuestoInput); err != nil {
+		http.Error(w, "Error al decodificar el catálogo: "+err.Error(), http.StatusBadRequest)
+		return
+	}
 
-	// Buscar el repuesto en la base de datos
+	// Asegurarse de que el ID esté presente en el cuerpo del request
+	if repuestoInput.ID == 0 {
+		http.Error(w, "ID del catálogo es requerido", http.StatusBadRequest)
+		return
+	}
+
+	// Buscar el catálogo en la base de datos por el ID
 	var repuesto modelosProveedor.Repuesto
-	if err := baseDeDatos.DB.Where("id_repuesto = ?", idRepuesto).First(&repuesto).Error; err != nil {
-		w.WriteHeader(http.StatusNotFound)
-		w.Write([]byte("El repuesto no existe"))
+	if err := baseDeDatos.DB.First(&repuesto, "id = ?", repuestoInput.ID).Error; err != nil {
+		http.Error(w, "Catálogo no encontrado: "+err.Error(), http.StatusNotFound)
 		return
 	}
 
-	// Decodificar el cuerpo de la solicitud con los nuevos datos del repuesto
-	var repuestoActualizado modelosProveedor.Repuesto
-	if err := json.NewDecoder(r.Body).Decode(&repuestoActualizado); err != nil {
-		http.Error(w, "Error al decodificar el repuesto: "+err.Error(), http.StatusBadRequest)
+	if err := validaciones.ValidarRepuesto(repuestoInput); err != nil {
+		http.Error(w, "Repuesto inválido: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	// Validar el repuesto actualizado
-	if err := validaciones.ValidarRepuesto(repuestoActualizado); err != nil {
-		http.Error(w, "Datos del repuesto inválidos: "+err.Error(), http.StatusBadRequest)
+	tx := baseDeDatos.DB.Begin()
+	if err := tx.First(&repuesto, "id = ?", repuestoInput.ID).Error; err != nil {
+		http.Error(w, "Repuesto no encontrado: "+err.Error(), http.StatusNotFound)
 		return
 	}
 
-	// Actualizar los campos que se deseen cambiar en el repuesto original
-	repuesto.Nombre = repuestoActualizado.Nombre
-	repuesto.Stock = repuestoActualizado.Stock
-	repuesto.Stock_minimo = repuestoActualizado.Stock_minimo
-	repuesto.Cantidad_a_comprar = repuestoActualizado.Cantidad_a_comprar
-	repuesto.Costo = repuestoActualizado.Costo
-	repuesto.Descripcion = repuestoActualizado.Descripcion
-
-	// Guardar los cambios en la base de datos
-	if err := baseDeDatos.DB.Save(&repuesto).Error; err != nil {
+	if err := tx.Model(&repuesto).Updates(repuestoInput).Error; err != nil {
+		tx.Rollback()
 		http.Error(w, "Error al actualizar el repuesto: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	// Enviar respuesta con el repuesto actualizado
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(&repuesto)
+	tx.Commit()
+	w.Write([]byte("Repuesto actualizado"))
+	w.WriteHeader(http.StatusOK)
+}
+
+func DeleteRepuestoHandler(w http.ResponseWriter, r *http.Request) {
+	var repuesto modelosProveedor.Repuesto
+	parametros := mux.Vars(r)
+
+	baseDeDatos.DB.First(&repuesto, parametros["id"])
+
+	if repuesto.ID == 0 {
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte("Repuesto no encontrado"))
+		return
+	}
+
+	baseDeDatos.DB.Unscoped().Delete(&repuesto)
+	w.Write([]byte("Repuesto borrado"))
+	w.WriteHeader(http.StatusOK)
+
 }
