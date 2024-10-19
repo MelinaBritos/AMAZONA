@@ -8,6 +8,9 @@ import (
 type Log = modelosLogs.Log
 
 func GetAll(w http.ResponseWriter, r *http.Request) {
+
+	
+
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
