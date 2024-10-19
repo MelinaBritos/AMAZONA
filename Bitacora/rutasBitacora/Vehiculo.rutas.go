@@ -160,7 +160,7 @@ func DeleteVehiculoHandler(w http.ResponseWriter, r *http.Request) {
 func validarVehiculo(vehiculo modelosBitacora.Vehiculo) error {
 
 	switch vehiculo.Estado {
-	case "NO APTO PARA CIRCULAR", "APTO PARA CIRCULAR", "EN VIAJE", "REPARACION", "MANTENIMIENTO", "DESHABILITADO":
+	case "NO APTO PARA CIRCULAR", "APTO PARA CIRCULAR":
 	default:
 		return errors.New("estado invalido")
 	}
@@ -180,6 +180,9 @@ func validarVehiculo(vehiculo modelosBitacora.Vehiculo) error {
 
 	if (FechaVTV).Before(UnAñoAtras) && vehiculo.EstadoVTV == "APROBADA" {
 		return errors.New("la vtv esta vencida")
+	}
+	if vehiculo.Estado == "APTO PARA CIRCULAR" && (vehiculo.EstadoVTV == "RECHAZADA" || vehiculo.EstadoVTV == "VENCIDA") {
+		return errors.New("el vehiculo no es apto para circular")
 	}
 
 	switch vehiculo.Marca {
