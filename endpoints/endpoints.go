@@ -26,6 +26,7 @@ func GenerarEndpoints() {
 	EndpointsCatalogo(r)
 	EndpointsRepuesto(r)
 	EndpointsTicket(r)
+	EndpointsLogs(r)
 
 	http.ListenAndServe(":"+port, r)
 }
