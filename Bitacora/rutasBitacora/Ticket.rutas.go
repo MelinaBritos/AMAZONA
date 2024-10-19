@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/MelinaBritos/TP-Principal-AMAZONA/Bitacora/modelosBitacora"
-	"github.com/MelinaBritos/TP-Principal-AMAZONA/Usuario/modelosUsuario"
 	"github.com/MelinaBritos/TP-Principal-AMAZONA/baseDeDatos"
 	"github.com/gorilla/mux"
 )
@@ -43,7 +42,7 @@ func PostTicketHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := validarTicket(ticket); err != nil {
+	if err := validarTicketNuevo(ticket); err != nil {
 		http.Error(w, "ticket inválido: "+err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -51,6 +50,8 @@ func PostTicketHandler(w http.ResponseWriter, r *http.Request) {
 	tx := baseDeDatos.DB.Begin()
 
 	ticket.FechaCreacion = time.Now().Format("02-01-2006")
+	tx.Save(ticket)
+
 	ticketCreado := tx.Create(&ticket)
 
 	err := ticketCreado.Error
@@ -74,6 +75,42 @@ func PostTicketHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
+func PutTicketHandler(w http.ResponseWriter, r *http.Request) {
+	var ticket modelosBitacora.Ticket
+	var ticketInput modelosBitacora.Ticket
+	// fecha finalizacion, costo total, desc reparacion, repuestos utilizados
+
+	if err := json.NewDecoder(r.Body).Decode(&ticketInput); err != nil {
+		http.Error(w, "Error al decodificar el ticket: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	tx := baseDeDatos.DB.Begin()
+	if err := tx.First(&ticket, "id = ?", ticketInput.ID).Error; err != nil {
+		http.Error(w, "Ticket no encontrado: "+err.Error(), http.StatusNotFound)
+		return
+	}
+
+	ticketInput.FechaFinalizacion = time.Now().Format("02-01-2006")
+	if len(ticketInput.DescripcionReparacion) > 100 || len(ticketInput.DescripcionReparacion) < 1 {
+		tx.Rollback()
+		http.Error(w, "La longitud de la descripcion de la reparacion es invalida", http.StatusInternalServerError)
+		return
+	}
+	tx.Save(ticketInput)
+	calcularCostoTotal(ticketInput)
+
+	if err := tx.Model(&ticket).Updates(ticketInput).Error; err != nil {
+		tx.Rollback()
+		http.Error(w, "Error al cerrar el Ticket: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	tx.Commit()
+	w.WriteHeader(http.StatusOK)
+
+}
+
 func DeleteTicketHandler(w http.ResponseWriter, r *http.Request) {
 	var ticket modelosBitacora.Ticket
 	parametros := mux.Vars(r)
@@ -91,10 +128,15 @@ func DeleteTicketHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func validarTicket(ticket modelosBitacora.Ticket) error {
+func calcularCostoTotal(ticket modelosBitacora.Ticket) {
+	//compras automaticas con umblas minimo
+	//historial de compras de repuestos
+}
+
+func validarTicketNuevo(ticket modelosBitacora.Ticket) error {
 
 	switch ticket.Estado {
-	case "NUEVO", "EN CURSO", "CERRADO", "RESUELTO":
+	case "EN CURSO", "SIN SOLUCION", "RESUELTO":
 	default:
 		return errors.New("estado invalido")
 	}
@@ -103,10 +145,8 @@ func validarTicket(ticket modelosBitacora.Ticket) error {
 	default:
 		return errors.New("tipo invalido")
 	}
-	var usuario modelosUsuario.Usuario
-	err := baseDeDatos.DB.Where("username = ?", ticket.Username).First(&usuario).Error
-	if err != nil {
-		return errors.New("error al encontrar usuario " + err.Error())
+	if len(ticket.MotivoIngreso) > 100 || len(ticket.MotivoIngreso) < 1 {
+		return errors.New("la longitud del motivo de ingreso es invalida")
 	}
 
 	return nil

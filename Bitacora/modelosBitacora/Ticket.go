@@ -8,7 +8,7 @@ type Ticket struct {
 	gorm.Model
 
 	Username              string `gorm:"not null"`
-	DescripcionProblema   string `gorm:"not null"`
+	MotivoIngreso         string `gorm:"not null"`
 	FechaCreacion         string `gorm:"not null"`
 	Estado                string `gorm:"not null"`
 	Tipo                  string `gorm:"not null"`
