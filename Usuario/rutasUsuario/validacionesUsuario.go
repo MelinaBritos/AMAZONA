@@ -3,6 +3,8 @@ package rutasUsuario
 import (
 	"errors"
 	"regexp"
+
+	"github.com/MelinaBritos/TP-Principal-AMAZONA/Usuario/modelosUsuario"
 )
 
 type COMPARATOR string
@@ -23,22 +25,22 @@ func verificarAtributos(usuario Usuario, comparator COMPARATOR) []error {
 	}
 
 	if comparator != SOFT {
-		hardvalidation(usuario, appendError)
+		hardvalidation(appendError, usuario)
 	} else {
-		softvalidation(appendError, usuario)
+		softvalidation(usuario, appendError)
 	}
 
 	return errorList
 }
 
-func softvalidation(appendError func(err error), usuario Usuario) {
+func hardvalidation(appendError func(err error), usuario Usuario) {
 	appendError(verificarDni(usuario.Dni))
 	appendError(verificarNombre(usuario.Nombre))
 	appendError(verificarApellido(usuario.Apellido))
 	appendError(verificarcontraseña(usuario.Clave))
 }
 
-func hardvalidation(usuario Usuario, appendError func(err error)) {
+func softvalidation(usuario Usuario, appendError func(err error)) {
 	if usuario.Clave != "" {
 		appendError(verificarcontraseña(usuario.Clave))
 	}
@@ -122,4 +124,30 @@ func defineFirstletter(usuario Usuario) (string, string) {
 
 func NoExisteNingunCampo(usuario Usuario) bool {
 	return usuario.Clave == "" && usuario.Nombre == "" && usuario.Apellido == "" && usuario.Dni == "" && usuario.Rol == ""
+}
+
+func DefinirUsuarioSegunApellido(usuario modelosUsuario.Usuario, usuarioActual modelosUsuario.Usuario) Usuario {
+	if usuario.Apellido != "" {
+
+		if usuario.Dni == "" {
+			usuario.Dni = usuarioActual.Dni
+		}
+
+	} else {
+		usuario.Dni = usuarioActual.Dni
+		usuario.Apellido = usuarioActual.Apellido
+	}
+	return usuario
+}
+
+func DefinirUsuarioSegunNombreVacio(usuario modelosUsuario.Usuario, usuarioActual modelosUsuario.Usuario) Usuario {
+	
+	usuario.Nombre = usuarioActual.Nombre
+	if usuario.Apellido != "" {
+		usuario.Dni = usuarioActual.Dni
+
+	} else {
+		usuario.Apellido = usuarioActual.Apellido
+	}
+	return usuario
 }

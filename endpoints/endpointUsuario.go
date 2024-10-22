@@ -12,6 +12,7 @@ func EndpointsUsuario(r *mux.Router) {
 	r.HandleFunc("/usuarios/roles/{rol}", rutasUsuario.GetUsuariosByRolHandler).Methods("GET")
 
 	r.HandleFunc("/usuarios/{username}", rutasUsuario.EditarUsuario).Methods("PUT") 
+	r.HandleFunc("/usuarios/modify/updateMany", rutasUsuario.EditarUsuarios).Methods("PUT")
 
 	r.HandleFunc("/usuarios/create", rutasUsuario.CrearUsuario).Methods("POST")            
 	r.HandleFunc("/usuarios/createMany", rutasUsuario.CrearUsuarios).Methods("POST")
