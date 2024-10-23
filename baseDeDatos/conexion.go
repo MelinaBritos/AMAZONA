@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/MelinaBritos/TP-Principal-AMAZONA/Bitacora/modelosBitacora"
+	"github.com/MelinaBritos/TP-Principal-AMAZONA/Paquete/modelosPaquete"
 	"github.com/MelinaBritos/TP-Principal-AMAZONA/Proveedor/modelosProveedor"
 	"github.com/MelinaBritos/TP-Principal-AMAZONA/Usuario/modelosUsuario"
 	"github.com/joho/godotenv"
@@ -61,7 +62,7 @@ func CrearTablas() {
 	DB.AutoMigrate(modelosBitacora.RepuestoUtilizado{})
 	DB.AutoMigrate(modelosBitacora.Ticket{})
 	DB.AutoMigrate(modelosBitacora.HistorialCompras{})
-
+	DB.AutoMigrate(modelosPaquete.Paquete{})
 }
 
 func CrearFKS() {
