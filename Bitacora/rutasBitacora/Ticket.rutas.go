@@ -7,6 +7,8 @@ import (
 	"time"
 
 	"github.com/MelinaBritos/TP-Principal-AMAZONA/Bitacora/modelosBitacora"
+	"github.com/MelinaBritos/TP-Principal-AMAZONA/Proveedor/modelosProveedor"
+	"github.com/MelinaBritos/TP-Principal-AMAZONA/Usuario/modelosUsuario"
 	"github.com/MelinaBritos/TP-Principal-AMAZONA/baseDeDatos"
 	"github.com/gorilla/mux"
 )
@@ -15,6 +17,11 @@ func GetTicketsHandler(w http.ResponseWriter, r *http.Request) {
 	var tickets []modelosBitacora.Ticket
 
 	baseDeDatos.DB.Find(&tickets)
+
+	if err := baseDeDatos.DB.Preload("Repuestos").Find(&tickets).Error; err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 	json.NewEncoder(w).Encode(&tickets)
 }
 
@@ -30,6 +37,7 @@ func GetTicketHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	baseDeDatos.DB.Model(&ticket).Association("Repuestos").Find(&ticket.Repuestos)
 	json.NewEncoder(w).Encode(&ticket)
 
 }
@@ -50,9 +58,10 @@ func PostTicketHandler(w http.ResponseWriter, r *http.Request) {
 	tx := baseDeDatos.DB.Begin()
 
 	ticket.FechaCreacion = time.Now().Format("02-01-2006")
-	tx.Save(ticket)
+	ticket.Estado = "EN CURSO"
 
 	ticketCreado := tx.Create(&ticket)
+	tx.Save(ticket)
 
 	err := ticketCreado.Error
 	if err != nil {
@@ -78,7 +87,6 @@ func PostTicketHandler(w http.ResponseWriter, r *http.Request) {
 func PutTicketHandler(w http.ResponseWriter, r *http.Request) {
 	var ticket modelosBitacora.Ticket
 	var ticketInput modelosBitacora.Ticket
-	// fecha finalizacion, costo total, desc reparacion, repuestos utilizados
 
 	if err := json.NewDecoder(r.Body).Decode(&ticketInput); err != nil {
 		http.Error(w, "Error al decodificar el ticket: "+err.Error(), http.StatusBadRequest)
@@ -91,18 +99,23 @@ func PutTicketHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ticketInput.FechaFinalizacion = time.Now().Format("02-01-2006")
-	if len(ticketInput.DescripcionReparacion) > 100 || len(ticketInput.DescripcionReparacion) < 1 {
-		tx.Rollback()
-		http.Error(w, "La longitud de la descripcion de la reparacion es invalida", http.StatusInternalServerError)
+	if err := validarTicketCerrado(ticketInput); err != nil {
+		http.Error(w, "Ticket inválido: "+err.Error(), http.StatusBadRequest)
 		return
 	}
+
+	ticketInput.FechaFinalizacion = time.Now().Format("02-01-2006")
 	tx.Save(ticketInput)
-	calcularCostoTotal(ticketInput)
 
 	if err := tx.Model(&ticket).Updates(ticketInput).Error; err != nil {
 		tx.Rollback()
 		http.Error(w, "Error al cerrar el Ticket: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if err := restarStockYcompras(ticketInput.Repuestos); err != nil {
+		tx.Rollback()
+		http.Error(w, "Error al restar stock de repuestos: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -128,25 +141,87 @@ func DeleteTicketHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func calcularCostoTotal(ticket modelosBitacora.Ticket) {
+func restarStockYcompras(repuestos []modelosBitacora.RepuestoUtilizado) error {
 	//compras automaticas con umblas minimo
 	//historial de compras de repuestos
+	tx := baseDeDatos.DB.Begin()
+	for _, respuestoUtilizado := range repuestos {
+		var repuesto modelosProveedor.Repuesto
+		err := tx.Where("ID = ?", respuestoUtilizado.IDRepuesto).First(&repuesto).Error
+		if err != nil {
+			return errors.New("el repuesto no existe")
+		}
+		repuesto.Stock -= respuestoUtilizado.Cantidad
+
+		//compra
+		if repuesto.Stock <= repuesto.Stock_minimo {
+			repuesto.Stock += repuesto.Cantidad_a_comprar
+
+			var historialNuevo modelosBitacora.HistorialCompras
+
+			historialNuevo.RepuestoComprado = repuesto
+			historialNuevo.Cantidad = repuesto.Cantidad_a_comprar
+			historialNuevo.Costo = float32(repuesto.Cantidad_a_comprar) * repuesto.Costo
+
+			historialCreado := tx.Create(&historialNuevo)
+			err := historialCreado.Error
+			if err != nil {
+				tx.Rollback()
+				return errors.New("error al crear historial de compras")
+			}
+			tx.Save(historialCreado)
+		}
+		tx.Save(repuesto)
+
+	}
+	tx.Commit()
+	return nil
 }
 
 func validarTicketNuevo(ticket modelosBitacora.Ticket) error {
-
-	switch ticket.Estado {
-	case "EN CURSO", "SIN SOLUCION", "RESUELTO":
-	default:
-		return errors.New("estado invalido")
+	var vehiculo modelosBitacora.Vehiculo
+	err := baseDeDatos.DB.Where("matricula = ?", ticket.Matricula).First(&vehiculo).Error
+	if err != nil {
+		return errors.New("el vehiculo no existe " + ticket.Matricula)
+	}
+	var usuario modelosUsuario.Usuario
+	err1 := baseDeDatos.DB.Where("username = ?", ticket.Username).First(&usuario).Error
+	if err1 != nil {
+		return errors.New("el usuario no existe " + ticket.Username)
 	}
 	switch ticket.Tipo {
 	case "MANTENIMIENTO", "REPARACION":
 	default:
 		return errors.New("tipo invalido")
 	}
-	if len(ticket.MotivoIngreso) > 100 || len(ticket.MotivoIngreso) < 1 {
+	if len(ticket.MotivoIngreso) > 100 || len(ticket.MotivoIngreso) <= 1 {
 		return errors.New("la longitud del motivo de ingreso es invalida")
+	}
+
+	return nil
+}
+
+func validarTicketCerrado(ticketInput modelosBitacora.Ticket) error {
+	switch ticketInput.Estado {
+	case "SIN SOLUCION", "RESUELTO":
+	default:
+		return errors.New("estado invalido")
+	}
+	if len(ticketInput.DescripcionReparacion) > 100 || len(ticketInput.DescripcionReparacion) <= 1 {
+		return errors.New("la longitud de la descripcion de la reparacion es invalida")
+	}
+	for _, respuestoUtilizado := range ticketInput.Repuestos {
+		var repuesto modelosProveedor.Repuesto
+		err := baseDeDatos.DB.Where("ID = ?", respuestoUtilizado.IDRepuesto).First(&repuesto).Error
+		if err != nil {
+			return errors.New("el repuesto no existe")
+		}
+		if respuestoUtilizado.IDTicket != ticketInput.ID {
+			return errors.New("el ID del ticket es incorrecto")
+		}
+		if respuestoUtilizado.Cantidad > repuesto.Stock {
+			return errors.New("no hay suficiente stock para el repuesto: " + repuesto.Nombre)
+		}
 	}
 
 	return nil
