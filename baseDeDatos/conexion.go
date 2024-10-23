@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/MelinaBritos/TP-Principal-AMAZONA/Bitacora/modelosBitacora"
+	"github.com/MelinaBritos/TP-Principal-AMAZONA/Logs/modelosLogs"
 	"github.com/MelinaBritos/TP-Principal-AMAZONA/Paquete/modelosPaquete"
 	"github.com/MelinaBritos/TP-Principal-AMAZONA/Proveedor/modelosProveedor"
 	"github.com/MelinaBritos/TP-Principal-AMAZONA/Usuario/modelosUsuario"
@@ -59,10 +60,11 @@ func CrearTablas() {
 	DB.AutoMigrate(modelosProveedor.Repuesto{})
 	DB.AutoMigrate(modelosBitacora.Vehiculo{})
 	DB.AutoMigrate(modelosUsuario.Usuario{})
-	DB.AutoMigrate(modelosBitacora.Ticket{})
 	DB.AutoMigrate(modelosBitacora.RepuestoUtilizado{})
+	DB.AutoMigrate(modelosBitacora.Ticket{})
+	DB.AutoMigrate(modelosBitacora.HistorialCompras{})
 	DB.AutoMigrate(modelosPaquete.Paquete{})
-
+	DB.AutoMigrate(modelosLogs.Log{})
 }
 
 func CrearFKS() {
@@ -70,7 +72,6 @@ func CrearFKS() {
 	query := `
     ALTER TABLE tickets ADD CONSTRAINT matriculaFK FOREIGN KEY (matricula) REFERENCES vehiculos(matricula);
     ALTER TABLE tickets ADD CONSTRAINT usernameFK FOREIGN KEY (username) REFERENCES usuarios(username);
-	ALTER TABLE repuesto_utilizados ADD CONSTRAINT id_RepuestoFK FOREIGN KEY (id_repuesto) REFERENCES repuestos(ID);
     `
 	DB.Exec(query)
 

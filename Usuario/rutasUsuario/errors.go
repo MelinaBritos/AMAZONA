@@ -8,7 +8,7 @@ import (
 func BadRequestError(w http.ResponseWriter, err error, message string) bool {
 
 	if err != nil {
-		http.Error(w, message, http.StatusBadRequest)
+		http.Error(w, message + ":" + err.Error(), http.StatusBadRequest)
 		return true
 	}
 	return false
