@@ -29,3 +29,23 @@ type Log struct {
 	Accion      OPERATION `json:"accion"`
 	Relevancia  int       `json:"relevancia"`
 }
+
+func IsValidAction(s string) bool{
+	var validOperations = map[OPERATION]struct{}{
+		ASIGNAR_PAQUETE:   {},
+		ASIGNAR_RUTA:      {},
+		ASIGNAR_VEHICULO:  {},
+		CARGAR_PAQUETE:    {},
+		COMENZAR_VIAJE:    {},
+		ENTREGAR_PAQUETE:  {},
+		FINALIZAR_VIAJE:   {},
+		ASIGNAR_CONDUCTOR: {},
+		CREAR_TICKET:      {},
+		CERRAR_TICKET:     {},
+		RESOLVER_TICKET:   {},
+		ACTUALIZAR_TICKET: {},
+	}
+
+	_, exists := validOperations[OPERATION(s)]
+	return exists
+}
