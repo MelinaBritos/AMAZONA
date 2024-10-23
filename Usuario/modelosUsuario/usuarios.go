@@ -20,7 +20,7 @@ type Credencial struct {
 type Usuario struct {
 	gorm.Model
 
-	Username string `gorm:"unique;not null" json:"username"`
+	Username string `gorm:"primaryKey" json:"username"`
 	Clave    string `json:"clave"`
 	Nombre   string `json:"nombre"`
 	Apellido string `json:"apellido"`
