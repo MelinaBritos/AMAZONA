@@ -16,6 +16,5 @@ type Ticket struct {
 	CostoTotal            float32
 	DescripcionReparacion string
 	FechaFinalizacion     string
-	//Repuestos  []RepuestoUtilizado `gorm:"foreignKey:IDTicketFK;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
-
+	Repuestos             []RepuestoUtilizado `gorm:"foreignKey:IDTicket;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 }

@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"github.com/joho/godotenv"
+
 	"github.com/gorilla/mux"
+	"github.com/joho/godotenv"
 )
 
 func GenerarEndpoints() {
@@ -25,6 +26,7 @@ func GenerarEndpoints() {
 	EndpointsRepuesto(r)
 	EndpointsTicket(r)
 	EndpointsLogs(r)
+	EndpointsHistorialCompras(r)
 	EndpointsPaquete(r)
 
 	http.ListenAndServe(":"+port, r)
