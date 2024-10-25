@@ -3,7 +3,6 @@ package rutasUsuario
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 
 	"net/http"
 
@@ -101,12 +100,25 @@ func EditarUsuario(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	username := params["username"]
 
-	if BadRequestError(w, err, "JSON inválido") {
-		return
-	}
+	if BadRequestError(w, err, "JSON inválido") {return}
 
 	if NoExisteNingunCampo(usuario) {
 		BadRequestError(w, errors.New(""), "No existe ningun campo")
+		return
+	}
+
+	if usuario.Dni !=  "" {
+		BadRequestError(w, errors.New(usuario.Dni), "your can't change de dni")
+		return
+	}
+
+	if usuario.Username != ""{
+		BadRequestError(w, errors.New(usuario.Username), "your can't change the username")
+		return
+	}
+
+	if usuario.ID != 0 {
+		BadRequestError(w, errors.New((string)(usuario.ID)), "your can't change the ID of the user")
 		return
 	}
 
@@ -119,27 +131,7 @@ func EditarUsuario(w http.ResponseWriter, r *http.Request) {
 
 	if usuario.Clave != "" {
 		usuario.Clave, err = Encriptar(usuario.Clave)
-		if StatusInternalServerError(w, err, "error al encriptar la nueva clave") {
-			return
-		}
-	}
-
-	if usuario.Nombre != "" || usuario.Apellido != "" || usuario.Dni != "" {
-
-		var usuarioActual Usuario
-		err := baseDeDatos.DB.Where("username = ?", username).First(&usuarioActual).Error
-		if StatusInternalServerError(w, err, "error al obtener al usuario") {return}
-
-		if usuario.Nombre != "" {
-
-			usuario = DefinirUsuarioSegunApellido(usuario, usuarioActual)
-			
-			
-		} else {
-
-			usuario = DefinirUsuarioSegunNombreVacio(usuario, usuarioActual)
-		}
-		usuario = DefinirUsername(usuario)
+		if StatusInternalServerError(w, err, "error al encriptar la nueva clave") {return}
 	}
 
 	err = baseDeDatos.DB.Model(&usuario).Where("username = ?", username).Updates(&usuario).Error
@@ -179,7 +171,15 @@ func EditarUsuarios(w http.ResponseWriter, r *http.Request) {
 	tx := baseDeDatos.DB.Begin()
 	for _, usuario := range usuarios {
 
-		var actualUsername string
+
+		if usuario.Dni != ""{
+			BadRequestError(w, err, "no puedes cambiar el dni del user")
+		}
+
+		if usuario.ID != 0 {
+			BadRequestError(w, errors.New((string)(usuario.ID)), "your can't change the ID of the user")
+			return
+		}
 
 		if usuario.Clave != "" {
 			usuario.Clave, err = Encriptar(usuario.Clave)
@@ -189,32 +189,7 @@ func EditarUsuarios(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		if usuario.Nombre != "" || usuario.Apellido != "" || usuario.Dni != "" {
-
-			
-			var usuarioActual Usuario
-			err := baseDeDatos.DB.Where("username = ?", usuario.Username).First(&usuarioActual).Error
-
-			fmt.Println(usuario.Nombre)
-			if StatusInternalServerError(w, err, "error al obtener al usuario") {
-				tx.Rollback()
-				return
-			}
-			actualUsername = usuarioActual.Username
-
-			if usuario.Nombre != "" {
-				usuario = DefinirUsuarioSegunApellido(usuario, usuarioActual)
-				
-			} else {
-				usuario = DefinirUsuarioSegunNombreVacio(usuario, usuarioActual)
-			}
-			usuario = DefinirUsername(usuario)
-			
-		} else{
-			actualUsername = usuario.Username
-		}
-
-		err = baseDeDatos.DB.Model(&usuario).Where("username = ?", actualUsername).Updates(&usuario).Error
+		err = baseDeDatos.DB.Model(&usuario).Where("username = ?", usuario.Username).Updates(&usuario).Error
 
 		if StatusInternalServerError(w, err, "Hubo un problema de actualizacion") {
 			tx.Rollback()
