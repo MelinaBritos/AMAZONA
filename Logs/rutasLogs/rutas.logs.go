@@ -112,7 +112,63 @@ func EditarLog(w http.ResponseWriter, r *http.Request){
 	w.Write([]byte("Actualizacion exitosa!"))
 }
 
+func EditMany(w http.ResponseWriter, r *http.Request){
+	params := mux.Vars(r)
+	username := params["username"]
 
+	err := DeleteByUsername(username)
+
+	if StatusNotFound(w, err, "no se encontro el log"){return}
+	if StatusInternalServerError(w, err, "Hubo un problema de eliminacion") {return}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Eliminacion exitosa!"))
+}
+
+func BorrarLogByUsername(w http.ResponseWriter, r *http.Request){
+	params := mux.Vars(r)
+	username := params["username"]
+
+	err := DeleteByUsername(username)
+
+	if StatusNotFound(w, err, "no se encontro el log"){return}
+	if StatusInternalServerError(w, err, "Hubo un problema de eliminacion") {return}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Eliminacion exitosa!"))
+}
+
+func BorrarLogs(w http.ResponseWriter, r *http.Request){
+	var logs []Log
+	var err error
+
+	err = json.NewDecoder(r.Body).Decode(&logs)
+	if BadRequestError(w, err, "Error al decodificar las logs: ") {
+		return
+	}
+
+	tx := baseDeDatos.DB.Begin()
+	for _, log := range logs {
+
+		if StatusNotFound(w, idIsPresent(log.ID), "no se encontro el id"){
+			tx.Rollback()
+			return
+		}
+
+		err = DeleteByIdU(log.ID)
+
+		if StatusInternalServerError(w, err, "no se encontro el id"){
+			tx.Rollback()
+			return
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Actualizacion exitosa!"))
+}
 
 func BorrarLog(w http.ResponseWriter, r *http.Request){
 	
@@ -127,39 +183,6 @@ func BorrarLog(w http.ResponseWriter, r *http.Request){
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Eliminacion exitosa!"))
-}
-
-func BorrarLogs(w http.ResponseWriter, r *http.Request){
-	
-	var logs []Log
-	var err error
-
-	err = json.NewDecoder(r.Body).Decode(&logs)
-	if BadRequestError(w, err, "Error al decodificar las logs: ") {
-		return
-	}
-
-	tx := baseDeDatos.DB.Begin()
-
-	for _, log := range logs {
-
-		err = DeleteByIdU(log.ID)
-
-		if StatusNotFound(w, err, "no se encontro el id"){
-			tx.Rollback()
-			return
-		}
-
-		if StatusInternalServerError(w, err, "error al eliminar el usuario"){
-			tx.Rollback()
-			return
-		}
-
-
-	}
-
-	tx.Commit()
-	w.WriteHeader(http.StatusOK)
 }
 
 

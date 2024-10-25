@@ -15,7 +15,9 @@ func EndpointsLogs(r *mux.Router){
 
 	r.HandleFunc("/logs/edit/{id}", rutasLogs.EditarLog).Methods("PUT")
 
+
 	r.HandleFunc("/logs/delete/{id}", rutasLogs.BorrarLog).Methods("DELETE")
+	r.HandleFunc("/logs/deleteByUsername/{username}", rutasLogs.BorrarLogByUsername).Methods("DELETE")
 	r.HandleFunc("/logs/deleteMany", rutasLogs.BorrarLogs).Methods("DELETE")
 
 }

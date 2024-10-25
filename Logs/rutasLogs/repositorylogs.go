@@ -68,6 +68,13 @@ func DeleteById(id string) error {
 	return err
 }
 
+func DeleteByUsername(username string) error{
+	var log Log
+
+	err := baseDeDatos.DB.Where("nombre_usuario = ?", username).Delete(&log).Error
+	return err
+}
+
 func DeleteByIdU(id uint) error {
 
 	var log Log
