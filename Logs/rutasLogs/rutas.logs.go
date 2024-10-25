@@ -112,6 +112,20 @@ func EditarLog(w http.ResponseWriter, r *http.Request){
 	w.Write([]byte("Actualizacion exitosa!"))
 }
 
+func EditMany(w http.ResponseWriter, r *http.Request){
+	params := mux.Vars(r)
+	username := params["username"]
+
+	err := DeleteByUsername(username)
+
+	if StatusNotFound(w, err, "no se encontro el log"){return}
+	if StatusInternalServerError(w, err, "Hubo un problema de eliminacion") {return}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Eliminacion exitosa!"))
+}
+
 
 
 func BorrarLog(w http.ResponseWriter, r *http.Request){
@@ -120,6 +134,21 @@ func BorrarLog(w http.ResponseWriter, r *http.Request){
 	id := params["id"]
 
 	err := DeleteById(id)
+
+	if StatusNotFound(w, err, "no se encontro el log"){return}
+	if StatusInternalServerError(w, err, "Hubo un problema de eliminacion") {return}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Eliminacion exitosa!"))
+}
+
+func BorrarLogByUsername(w http.ResponseWriter, r *http.Request){
+	
+	params := mux.Vars(r)
+	username := params["username"]
+
+	err := DeleteByUsername(username)
 
 	if StatusNotFound(w, err, "no se encontro el log"){return}
 	if StatusInternalServerError(w, err, "Hubo un problema de eliminacion") {return}
