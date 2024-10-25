@@ -67,3 +67,10 @@ func DeleteById(id string) error {
 	err = baseDeDatos.DB.Where("id = ?", _id).Delete(&log).Error
 	return err
 }
+
+func DeleteByIdU(id uint) error {
+
+	var log Log
+	err := baseDeDatos.DB.Where("id = ?", id).Delete(&log).Error
+	return err
+}
