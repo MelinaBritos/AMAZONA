@@ -25,21 +25,19 @@ func ObtenerPaquete(id_paquete string) (modelosPaquete.Paquete, error) {
 }
 
 func CrearPaquetes(paquetes []modelosPaquete.Paquete) error {
-
 	tx := baseDeDatos.DB.Begin()
 
-	for paquete := range paquetes {
-		if err := tx.Create(paquete).Error; err != nil {
-			tx.Rollback()
-			return err
-		}
+	// Especificar el modelo para la tabla
+	if err := tx.Model(&modelosPaquete.Paquete{}).Create(&paquetes).Error; err != nil {
+		tx.Rollback() // En caso de error, realizar rollback
+		return err
 	}
 
-	tx.Commit()
-	return nil
+	return tx.Commit().Error
 }
 
 func ActualizarPaquetes(paquetesInput []*modelosPaquete.Paquete) error {
+
 	tx := baseDeDatos.DB.Begin()
 
 	for _, paqueteInput := range paquetesInput {
@@ -70,4 +68,38 @@ func BorrarPaquete(id_paquete string) error {
 	}
 
 	return nil
+}
+
+func ActualizarEstadoPaquete(id_paquete string, estado string) error {
+
+	estadoNuevo, err := modelosPaquete.ParseEstado(estado)
+	if err != nil {
+		return fmt.Errorf("error al parsear el estado: %w", err)
+	}
+
+	paquete, err := ObtenerPaquete(id_paquete)
+	if err != nil {
+		return err
+	}
+
+	tx := baseDeDatos.DB.Begin()
+	paquete.Estado = estadoNuevo
+
+	if err := tx.Save(&paquete).Error; err != nil {
+		tx.Rollback()
+		return fmt.Errorf("error al actualizar el estado del paquete: %w", err)
+	}
+
+	return tx.Commit().Error
+}
+
+func ObtenerPaquetesDeConductor(id_conductor string) ([]modelosPaquete.Paquete, error) {
+
+	var paquetes []modelosPaquete.Paquete
+
+	if err := baseDeDatos.DB.Where("id_conductor = ?", id_conductor).Find(&paquetes).Error; err != nil {
+		return nil, fmt.Errorf("error al obtener los paquetes del conductor: %w", err)
+	}
+
+	return paquetes, nil
 }

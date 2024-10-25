@@ -1,6 +1,7 @@
 package modelosPaquete
 
 import (
+	"fmt"
 	"strconv"
 
 	"gorm.io/gorm"
@@ -47,4 +48,22 @@ func ObtenerEstadosValidos() []Estado {
 // Método para obtener el ID como string
 func (p *Paquete) GetIDAsString() string {
 	return strconv.Itoa(int(p.ID))
+}
+
+// Función para convertir string a Estado
+func ParseEstado(s string) (Estado, error) {
+	switch s {
+	case "SIN ASIGNAR":
+		return SIN_ASIGNAR, nil
+	case "ASIGNADO":
+		return ASIGNADO, nil
+	case "EN VIAJE":
+		return EN_VIAJE, nil
+	case "ENTREGADO":
+		return ENTREGADO, nil
+	case "NO ENTREGADO":
+		return NO_ENTREGADO, nil
+	default:
+		return SIN_ASIGNAR, fmt.Errorf("estado no válido: %s", s)
+	}
 }

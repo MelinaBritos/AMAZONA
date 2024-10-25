@@ -105,3 +105,22 @@ func DeletePaqueteHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Paquete borrado"))
 	w.WriteHeader(http.StatusOK)
 }
+
+func GetPaquetesAsignadosAConductorHandler(w http.ResponseWriter, r *http.Request) {
+
+	params := mux.Vars(r)
+	id_conductor := params["id"]
+
+	paquetes, err := dataPaquete.ObtenerPaquetesDeConductor(id_conductor)
+	if err != nil {
+		http.Error(w, "Error al obtener los paquetes: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Si todo está bien, retornamos los paquetes como JSON
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(paquetes); err != nil {
+		http.Error(w, "Error al codificar los paquetes a JSON: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+}

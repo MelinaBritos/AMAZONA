@@ -8,9 +8,10 @@ import (
 func EndpointsPaquete(r *mux.Router) {
 
 	r.HandleFunc("/paquete/{id}", rutasPaquete.GetPaqueteHandler).Methods("GET")
-	r.HandleFunc("/paquete", rutasPaquete.GetPaquetesHandler).Methods("GET")
+	r.HandleFunc("/paquetes", rutasPaquete.GetPaquetesHandler).Methods("GET")
 	r.HandleFunc("/paquete", rutasPaquete.PutPaqueteHandler).Methods("PUT")
 	r.HandleFunc("/paquete", rutasPaquete.PostPaqueteHandler).Methods("POST")
 	r.HandleFunc("/paquete/{id}", rutasPaquete.DeletePaqueteHandler).Methods("DELETE")
+	r.HandleFunc("/paquete/conductor/{id}", rutasPaquete.GetPaquetesAsignadosAConductorHandler).Methods("GET")
 
 }
