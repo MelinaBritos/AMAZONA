@@ -130,7 +130,7 @@ func PutVehiculoHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := tx.Model(&vehiculo).Updates(vehiculoInput).Error; err != nil {
+	if err := tx.Model(&vehiculo).Omit("FechaIngreso").Updates(vehiculoInput).Error; err != nil {
 		tx.Rollback()
 		http.Error(w, "Error al actualizar el vehículo: "+err.Error(), http.StatusInternalServerError)
 		return

@@ -21,7 +21,7 @@ var DB *gorm.DB
 func Conexiondb() {
 	var err error
 
-	DSN, err := ObtenerDSN()
+	DSN, err := ObtenerDSNV2()
 
 	if err != nil {
 		log.Fatal(err)
@@ -65,50 +65,4 @@ func CrearTablas() {
 	DB.AutoMigrate(modelosBitacora.HistorialCompras{})
 	DB.AutoMigrate(modelosPaquete.Paquete{})
 	DB.AutoMigrate(modelosLogs.Log{})
-}
-
-func CrearFKS() error {
-
-	query := `
-    ALTER TABLE tickets ADD CONSTRAINT matriculaFK FOREIGN KEY (matricula) REFERENCES vehiculos(matricula);
-    ALTER TABLE tickets ADD CONSTRAINT usernameFK FOREIGN KEY (username) REFERENCES usuarios(username);
-    `
-	DB.Exec(query)
-	// Alter para la tabla tickets
-	if err := DB.Exec(`ALTER TABLE tickets ADD CONSTRAINT matriculaFK FOREIGN KEY (matricula) REFERENCES vehiculos(matricula)`).Error; err != nil {
-		return fmt.Errorf("error creando FK matricula en tickets: %w", err)
-	}
-
-	if err := DB.Exec(`ALTER TABLE tickets ADD CONSTRAINT usernameFK FOREIGN KEY (username) REFERENCES usuarios(username)`).Error; err != nil {
-		return fmt.Errorf("error creando FK username en tickets: %w", err)
-	}
-
-	// Alter para la tabla repuesto_utilizados
-	if err := DB.Exec(`ALTER TABLE repuesto_utilizados ADD CONSTRAINT id_RepuestoFK FOREIGN KEY (id_repuesto) REFERENCES repuestos(ID)`).Error; err != nil {
-		return fmt.Errorf("error creando FK id_repuesto en repuesto_utilizados: %w", err)
-	}
-
-	// Alters para la tabla paquetes
-	if err := DB.Exec(`ALTER TABLE paquetes MODIFY COLUMN id_viaje INT NULL`).Error; err != nil {
-		return fmt.Errorf("error modificando id_viaje en paquetes: %w", err)
-	}
-	if err := DB.Exec(`ALTER TABLE paquetes ADD CONSTRAINT fk_id_viaje FOREIGN KEY (id_viaje) REFERENCES viajes(id) ON UPDATE CASCADE ON DELETE SET NULL`).Error; err != nil {
-		return fmt.Errorf("error creando FK id_viaje en paquetes: %w", err)
-	}
-
-	if err := DB.Exec(`ALTER TABLE paquetes MODIFY COLUMN id_conductor INT NULL`).Error; err != nil {
-		return fmt.Errorf("error modificando id_conductor en paquetes: %w", err)
-	}
-	if err := DB.Exec(`ALTER TABLE paquetes ADD CONSTRAINT fk_id_conductor FOREIGN KEY (id_conductor) REFERENCES usuarios(id) ON UPDATE CASCADE ON DELETE SET NULL`).Error; err != nil {
-		return fmt.Errorf("error creando FK id_conductor en paquetes: %w", err)
-	}
-
-	if err := DB.Exec(`ALTER TABLE paquetes MODIFY COLUMN matricula VARCHAR(255) NULL`).Error; err != nil {
-		return fmt.Errorf("error modificando matricula en paquetes: %w", err)
-	}
-	if err := DB.Exec(`ALTER TABLE paquetes ADD CONSTRAINT fk_matricula FOREIGN KEY (matricula) REFERENCES vehiculos(matricula) ON UPDATE CASCADE ON DELETE SET NULL`).Error; err != nil {
-		return fmt.Errorf("error creando FK matricula en paquetes: %w", err)
-	}
-
-	return nil
 }

@@ -12,4 +12,5 @@ type HistorialCompras struct {
 	RepuestoComprado   modelosProveedor.Repuesto
 	Cantidad           int
 	Costo              float32
+	FechaCompra        string
 }
