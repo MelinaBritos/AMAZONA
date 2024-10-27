@@ -21,7 +21,7 @@ var DB *gorm.DB
 func Conexiondb() {
 	var err error
 
-	DSN, err := ObtenerDSNV2()
+	DSN, err := ObtenerDSN()
 
 	if err != nil {
 		log.Fatal(err)
