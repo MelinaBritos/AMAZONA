@@ -24,7 +24,6 @@ type Log struct {
 
 	Id_usuario     int    `gorm:"not null" json:"id_usuario"`
 	Nombre_usuario string `gorm:"not null" json:"username"`
-
 	Descripcion string    `json:"descripcion"`
 	Accion      OPERATION `json:"accion"`
 	Relevancia  int       `json:"relevancia"`

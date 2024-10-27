@@ -13,6 +13,8 @@ func EndpointsLogs(r *mux.Router){
 	r.HandleFunc("/logs/create", rutasLogs.CreateLogHandler).Methods("POST")
 	r.HandleFunc("/logs/create/Many", rutasLogs.CreateMany).Methods("POST")
 
+	r.HandleFunc("/logs/create/Many", rutasLogs.CreateMany).Methods("POST")
+
 	r.HandleFunc("/logs/edit/{id}", rutasLogs.EditarLog).Methods("PUT")
 
 
