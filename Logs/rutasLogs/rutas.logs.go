@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/MelinaBritos/TP-Principal-AMAZONA/Logs/modelosLogs"
+	"github.com/MelinaBritos/TP-Principal-AMAZONA/baseDeDatos"
 	"github.com/gorilla/mux"
 )
 
@@ -66,6 +67,30 @@ func CreateLogHandler(w http.ResponseWriter, r *http.Request){
 
 }
 
+func CreateMany(w http.ResponseWriter, r *http.Request){
+	var logs []Log
+	var err error
+
+	err = json.NewDecoder(r.Body).Decode(&logs)
+	if BadRequestError(w, err, "Error al decodificar las logs: ") {
+		return
+	}
+
+	tx := baseDeDatos.DB.Begin()
+	for _, log := range logs {
+		err = CreateValidation(log)
+
+		if StatusInternalServerError(w, err, "error al crear log"){
+			tx.Rollback()
+			return
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Actualizacion exitosa!"))
+}
+
 func EditarLog(w http.ResponseWriter, r *http.Request){
 	var log Log
 
@@ -82,13 +107,68 @@ func EditarLog(w http.ResponseWriter, r *http.Request){
 	if StatusNotFound(w, err, "log no encontrado"){return}
 	if StatusInternalServerError(w, err, "actualizacion no realizada"){return}
 
-
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Actualizacion exitosa!"))
 }
 
+func EditMany(w http.ResponseWriter, r *http.Request){
+	params := mux.Vars(r)
+	username := params["username"]
 
+	err := DeleteByUsername(username)
+
+	if StatusNotFound(w, err, "no se encontro el log"){return}
+	if StatusInternalServerError(w, err, "Hubo un problema de eliminacion") {return}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Eliminacion exitosa!"))
+}
+
+func BorrarLogByUsername(w http.ResponseWriter, r *http.Request){
+	params := mux.Vars(r)
+	username := params["username"]
+
+	err := DeleteByUsername(username)
+
+	if StatusNotFound(w, err, "no se encontro el log"){return}
+	if StatusInternalServerError(w, err, "Hubo un problema de eliminacion") {return}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Eliminacion exitosa!"))
+}
+
+func BorrarLogs(w http.ResponseWriter, r *http.Request){
+	var logs []Log
+	var err error
+
+	err = json.NewDecoder(r.Body).Decode(&logs)
+	if BadRequestError(w, err, "Error al decodificar las logs: ") {
+		return
+	}
+
+	tx := baseDeDatos.DB.Begin()
+	for _, log := range logs {
+
+		if StatusNotFound(w, idIsPresent(log.ID), "no se encontro el id"){
+			tx.Rollback()
+			return
+		}
+
+		err = DeleteByIdU(log.ID)
+
+		if StatusInternalServerError(w, err, "no se encontro el id"){
+			tx.Rollback()
+			return
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Actualizacion exitosa!"))
+}
 
 func BorrarLog(w http.ResponseWriter, r *http.Request){
 	
