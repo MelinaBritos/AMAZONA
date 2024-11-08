@@ -29,9 +29,6 @@ const (
 type Paquete struct {
 	gorm.Model
 
-	Id_viaje           int
-	Id_conductor       int
-	Matricula          string
 	Estado             Estado  `gorm:"not null"`
 	Peso_kg            float32 `gorm:"not null"`
 	Nombre_cliente     string  `gorm:"not null"`
