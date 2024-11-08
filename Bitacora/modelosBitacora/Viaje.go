@@ -11,9 +11,10 @@ type Viaje struct {
 	UsernameConductor string `gorm:"not null"`
 	Matricula         string `gorm:"not null"`
 	Estado            string `gorm:"not null"`
-	FechaAsignacion   string `gorm:"not null"`
+	FechaAsignacion   string
 	FechaInicio       string
 	Costo             float32
 	FechaFinalizacion string
 	Paquetes          []modelosPaquete.Paquete `gorm:"foreignKey:Id_viaje;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
+	FechaReservaViaje string
 }
