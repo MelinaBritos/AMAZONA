@@ -10,18 +10,6 @@ import (
 
 func ValidarPaquete(paquete modelosPaquete.Paquete) error {
 
-	// if !existeViaje(paquete.Id_viaje) {
-	// 	return fmt.Errorf("no existe el viaje %d", paquete.Id_viaje)
-	// }
-
-	// if !existeConductor(paquete.Id_conductor) {
-	// 	return fmt.Errorf("no existe el conductor %d", paquete.Id_conductor)
-	// }
-
-	// if !existeMatricula(paquete.Matricula) {
-	// 	return fmt.Errorf("no existe la matricula %s", paquete.Matricula)
-	// }
-
 	if !estadoValido(paquete.Estado) {
 		return fmt.Errorf("el estado %s no es un estado valido", paquete.Estado)
 	}
@@ -49,31 +37,6 @@ func ValidarPaquete(paquete modelosPaquete.Paquete) error {
 	return nil
 
 }
-
-// func existeViaje(id_viaje int) bool {
-
-// 	//existeViajeDeViaje (id_viaje)
-// 	var viaje modelosViaje.Viaje
-// 	baseDeDatos.DB.Where("id = ?", id_viaje).First(&viaje)
-
-// 	return viaje.ID != 0
-// }
-
-// func existeConductor(id_conductor int) bool {
-
-// 	var conductor modelosUsuario.Usuario
-// 	baseDeDatos.DB.Where("id = ? AND rol = ?", id_conductor, modelosUsuario.CONDUCTOR).First(&conductor)
-
-// 	return conductor.ID != 0
-// }
-
-// func existeMatricula(matricula string) bool {
-
-// 	var vehiculo modelosBitacora.Vehiculo
-// 	baseDeDatos.DB.Where("matricula = ?", matricula).First(&vehiculo)
-
-// 	return vehiculo.ID != 0
-// }
 
 func estadoValido(estado modelosPaquete.Estado) bool {
 
