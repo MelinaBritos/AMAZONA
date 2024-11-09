@@ -21,7 +21,7 @@ var DB *gorm.DB
 func Conexiondb() {
 	var err error
 
-	DSN, err := ObtenerDSN()
+	DSN, err := ObtenerDSNV2()
 
 	if err != nil {
 		log.Fatal(err)
@@ -65,4 +65,7 @@ func CrearTablas() {
 	DB.AutoMigrate(modelosBitacora.HistorialCompras{})
 	DB.AutoMigrate(modelosPaquete.Paquete{})
 	DB.AutoMigrate(modelosLogs.Log{})
+	DB.AutoMigrate(modelosBitacora.Viaje{})
+	DB.AutoMigrate(modelosBitacora.CostosViaje{})
+	DB.AutoMigrate(modelosBitacora.Entrega{})
 }

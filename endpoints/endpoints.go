@@ -14,7 +14,7 @@ func GenerarEndpoints() {
 
 	r := mux.NewRouter()
 
-	port, err := CargarPuerto()
+	port, err := CargarPuertoV2()
 
 	if err != nil {
 		println(err)
@@ -29,6 +29,8 @@ func GenerarEndpoints() {
 	EndpointsLogs(r)
 	EndpointsHistorialCompras(r)
 	EndpointsPaquete(r)
+	EndpointsViaje(r)
+	EndpointsEntrega(r)
 
 	corsHandler := handlers.CORS(
 		handlers.AllowedOrigins([]string{"*"}),
