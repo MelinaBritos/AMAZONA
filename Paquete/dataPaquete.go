@@ -103,3 +103,11 @@ func ObtenerPaquetesDeConductor(id_conductor string) ([]modelosPaquete.Paquete, 
 
 	return paquetes, nil
 }
+
+func ObtenerPaquetesSinAsignar() []modelosPaquete.Paquete {
+
+	var paquetesSinAsignar []modelosPaquete.Paquete
+	baseDeDatos.DB.Where("estado = ?", modelosPaquete.SIN_ASIGNAR).Find(&paquetesSinAsignar)
+	return paquetesSinAsignar
+
+}
