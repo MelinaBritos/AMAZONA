@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/MelinaBritos/TP-Principal-AMAZONA/Bitacora/modelosBitacora"
+	"github.com/MelinaBritos/TP-Principal-AMAZONA/Localidad/modelosLocalidad"
 	"github.com/MelinaBritos/TP-Principal-AMAZONA/Logs/modelosLogs"
 	"github.com/MelinaBritos/TP-Principal-AMAZONA/Paquete/modelosPaquete"
 	"github.com/MelinaBritos/TP-Principal-AMAZONA/Proveedor/modelosProveedor"
@@ -68,4 +69,5 @@ func CrearTablas() {
 	DB.AutoMigrate(modelosBitacora.Viaje{})
 	DB.AutoMigrate(modelosBitacora.CostosViaje{})
 	DB.AutoMigrate(modelosBitacora.Entrega{})
+	DB.AutoMigrate(modelosLocalidad.Localidad{})
 }
