@@ -107,7 +107,7 @@ func PutTicketHandler(w http.ResponseWriter, r *http.Request) {
 	ticketInput.FechaFinalizacion = time.Now().Format("02-01-2006")
 	tx.Save(ticketInput)
 
-	if err := tx.Model(&ticket).Updates(ticketInput).Error; err != nil {
+	if err := tx.Model(&ticket).Omit("FechaCreacion").Updates(ticketInput).Error; err != nil {
 		tx.Rollback()
 		http.Error(w, "Error al cerrar el Ticket: "+err.Error(), http.StatusInternalServerError)
 		return
@@ -142,8 +142,7 @@ func DeleteTicketHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func restarStockYcompras(repuestos []modelosBitacora.RepuestoUtilizado) error {
-	//compras automaticas con umblas minimo
-	//historial de compras de repuestos
+
 	tx := baseDeDatos.DB.Begin()
 	for _, respuestoUtilizado := range repuestos {
 		var repuesto modelosProveedor.Repuesto
@@ -162,6 +161,7 @@ func restarStockYcompras(repuestos []modelosBitacora.RepuestoUtilizado) error {
 			historialNuevo.RepuestoComprado = repuesto
 			historialNuevo.Cantidad = repuesto.Cantidad_a_comprar
 			historialNuevo.Costo = float32(repuesto.Cantidad_a_comprar) * repuesto.Costo
+			historialNuevo.FechaCompra = time.Now().Format("02-01-2006")
 
 			historialCreado := tx.Create(&historialNuevo)
 			err := historialCreado.Error

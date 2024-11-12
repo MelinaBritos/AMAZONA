@@ -123,4 +123,16 @@ func GetPaquetesAsignadosAConductorHandler(w http.ResponseWriter, r *http.Reques
 		http.Error(w, "Error al codificar los paquetes a JSON: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+}
+
+func GetPaquetesSinAsignar(w http.ResponseWriter, r *http.Request) {
+	paquetes := dataPaquete.ObtenerPaquetesSinAsignar()
+
+	w.Header().Set("Content-Type", "application/json")
+
+	if err := json.NewEncoder(w).Encode(paquetes); err != nil {
+		http.Error(w, "Error al codificar paquetes en JSON", http.StatusInternalServerError)
+		return
+	}
 }

@@ -36,7 +36,7 @@ func GetUsuariosHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func GetUsuarioByUsernameHandler(w http.ResponseWriter, r *http.Request) {
+func GetByUsername(w http.ResponseWriter, r *http.Request) {
 
 	var usuario Usuario
 	parametros := mux.Vars(r)
@@ -64,7 +64,7 @@ func GetUsuarioByUsernameHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func GetUsuariosByRolHandler(w http.ResponseWriter, r *http.Request) {
+func GetByRol(w http.ResponseWriter, r *http.Request) {
 
 	var usuarios []Usuario
 	parametros := mux.Vars(r)
@@ -91,7 +91,7 @@ func GetUsuariosByRolHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func EditarUsuario(w http.ResponseWriter, r *http.Request) {
+func Editar(w http.ResponseWriter, r *http.Request) {
 
 	var usuario Usuario
 
@@ -146,7 +146,7 @@ func EditarUsuario(w http.ResponseWriter, r *http.Request) {
 
 
 
-func EditarUsuarios(w http.ResponseWriter, r *http.Request) {
+func EditMany(w http.ResponseWriter, r *http.Request) {
 
 	var usuarios []Usuario
 
@@ -202,7 +202,7 @@ func EditarUsuarios(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func CrearUsuario(w http.ResponseWriter, r *http.Request) {
+func Crear(w http.ResponseWriter, r *http.Request) {
 
 	var usuario Usuario
 	err := json.NewDecoder(r.Body).Decode(&usuario)
@@ -243,7 +243,7 @@ func CrearUsuario(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(prettyJSON))
 }
 
-func CrearUsuarios(w http.ResponseWriter, r *http.Request) {
+func CreateMany(w http.ResponseWriter, r *http.Request) {
 
 	var usuarios []Usuario
 
@@ -285,7 +285,7 @@ func CrearUsuarios(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func EliminarUsuario(w http.ResponseWriter, r *http.Request) {
+func Eliminar(w http.ResponseWriter, r *http.Request) {
 	var usuario Usuario
 
 	params := mux.Vars(r)
@@ -302,7 +302,23 @@ func EliminarUsuario(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func EliminarUsuarios(w http.ResponseWriter, r *http.Request) {
+func Deshabilitar(w http.ResponseWriter, r *http.Request){
+	var usuario Usuario
+
+	params := mux.Vars(r)
+	username := params["username"]
+
+	err := baseDeDatos.DB.Where("username = ?", username).Delete(&usuario).Error
+	if StatusInternalServerError(w, err, "Hubo un problema al deshabilitar el usuario") {
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("se ha deshabilitado al usuario"))
+}
+
+func EliminarMuchos(w http.ResponseWriter, r *http.Request) {
 
 	var credenciales []Credencial
 

@@ -35,6 +35,21 @@ func GetVehiculoHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func GetVehiculosDisponiblesHandler(w http.ResponseWriter, r *http.Request) {
+	var vehiculos []modelosBitacora.Vehiculo
+
+	baseDeDatos.DB.Find(&vehiculos)
+
+	var vehiculosDisponibles []modelosBitacora.Vehiculo
+	for _, vehiculo := range vehiculos {
+		if vehiculo.Estado != "NO APTO PARA CIRCULAR" && vehiculo.Estado != "REPARACIÓN" && vehiculo.Estado != "MANTENIMIENTO" {
+			vehiculosDisponibles = append(vehiculosDisponibles, vehiculo)
+		}
+	}
+
+	json.NewEncoder(w).Encode(&vehiculosDisponibles)
+}
+
 func GetMarcasVehiculoHandler(w http.ResponseWriter, r *http.Request) {
 	marcas := []string{"Fiat", "Renault", "Peugeot", "Citroën", "Volkswagen", "Ford", "Nissan", "Toyota", "Mercedes-Benz"}
 	json.NewEncoder(w).Encode(&marcas)
@@ -130,7 +145,7 @@ func PutVehiculoHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := tx.Model(&vehiculo).Updates(vehiculoInput).Error; err != nil {
+	if err := tx.Model(&vehiculo).Omit("FechaIngreso").Updates(vehiculoInput).Error; err != nil {
 		tx.Rollback()
 		http.Error(w, "Error al actualizar el vehículo: "+err.Error(), http.StatusInternalServerError)
 		return

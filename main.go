@@ -8,8 +8,6 @@ import (
 func main() {
 
 	baseDeDatos.Conexiondb()
-	//baseDeDatos.CrearTablas()
-	//baseDeDatos.CrearFKS()
-
+	baseDeDatos.CrearTablas()
 	endpoints.GenerarEndpoints()
 }

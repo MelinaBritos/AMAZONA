@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 )
@@ -28,8 +29,17 @@ func GenerarEndpoints() {
 	EndpointsLogs(r)
 	EndpointsHistorialCompras(r)
 	EndpointsPaquete(r)
+	EndpointsViaje(r)
+	EndpointsEntrega(r)
+	EndpointsLocalidad(r)
 
-	http.ListenAndServe(":"+port, r)
+	corsHandler := handlers.CORS(
+		handlers.AllowedOrigins([]string{"*"}),
+		handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE"}),
+		handlers.AllowedHeaders([]string{"Content-Type", "Authorization"}),
+	)
+
+	http.ListenAndServe(":"+port, corsHandler(r))
 }
 
 func CargarPuerto() (string, error) {
