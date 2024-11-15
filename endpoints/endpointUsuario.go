@@ -37,4 +37,5 @@ func Get(r *mux.Router) {
 	r.HandleFunc("/usuarios", UserService.GetUsuariosHandler).Methods("GET")
 	r.HandleFunc("/usuarios/{username}", UserService.GetByUsername).Methods("GET")
 	r.HandleFunc("/usuarios/roles/{rol}", UserService.GetByRol).Methods("GET")
+	r.HandleFunc("/usuarios/estado/{estado}", UserService.GetByStatus).Methods("GET")
 }
