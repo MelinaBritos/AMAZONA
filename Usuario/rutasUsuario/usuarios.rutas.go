@@ -100,19 +100,21 @@ func Editar(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	username := params["username"]
 
-	if BadRequestError(w, err, "JSON inválido") {return}
+	if BadRequestError(w, err, "JSON inválido") {
+		return
+	}
 
 	if NoExisteNingunCampo(usuario) {
 		BadRequestError(w, errors.New(""), "No existe ningun campo")
 		return
 	}
 
-	if usuario.Dni !=  "" {
+	if usuario.Dni != "" {
 		BadRequestError(w, errors.New(usuario.Dni), "your can't change de dni")
 		return
 	}
 
-	if usuario.Username != ""{
+	if usuario.Username != "" {
 		BadRequestError(w, errors.New(usuario.Username), "your can't change the username")
 		return
 	}
@@ -131,20 +133,22 @@ func Editar(w http.ResponseWriter, r *http.Request) {
 
 	if usuario.Clave != "" {
 		usuario.Clave, err = Encriptar(usuario.Clave)
-		if StatusInternalServerError(w, err, "error al encriptar la nueva clave") {return}
+		if StatusInternalServerError(w, err, "error al encriptar la nueva clave") {
+			return
+		}
 	}
 
 	err = baseDeDatos.DB.Model(&usuario).Where("username = ?", username).Updates(&usuario).Error
 
-	if StatusInternalServerError(w, err, "Hubo un problema de actualizacion") {return}
+	if StatusInternalServerError(w, err, "Hubo un problema de actualizacion") {
+		return
+	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Actualizacion exitosa!"))
 
 }
-
-
 
 func EditMany(w http.ResponseWriter, r *http.Request) {
 
@@ -171,8 +175,7 @@ func EditMany(w http.ResponseWriter, r *http.Request) {
 	tx := baseDeDatos.DB.Begin()
 	for _, usuario := range usuarios {
 
-
-		if usuario.Dni != ""{
+		if usuario.Dni != "" {
 			BadRequestError(w, err, "no puedes cambiar el dni del user")
 		}
 
@@ -302,7 +305,7 @@ func Eliminar(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func Deshabilitar(w http.ResponseWriter, r *http.Request){
+func Deshabilitar(w http.ResponseWriter, r *http.Request) {
 	var usuario Usuario
 
 	params := mux.Vars(r)
@@ -380,5 +383,45 @@ func Loguearse(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 
 	w.Write(prettyJSON)
+
+}
+
+func GetByStatus(w http.ResponseWriter, r *http.Request) {
+	var usuarios []Usuario
+	parametros := mux.Vars(r)
+	estado := parametros["estado"]
+	var err error
+
+	switch estado {
+		case "HABILITADO":{
+			err = baseDeDatos.DB.Find(&usuarios).Error
+		}
+		case "DESHABILITADO":{
+			err = baseDeDatos.DB.Unscoped().Where("deleted_at IS NOT NULL").Find(&usuarios).Error
+		}
+		default:{
+			StatusInternalServerError(w, errors.New("no ha puesto un estado valido"), "Solicitud invalida")
+			return
+		}
+	}
+
+	if StatusInternalServerError(w, err, "Solicitud invalida") {
+		return
+	}
+	if len(usuarios) == 0 {
+		w.WriteHeader(http.StatusNoContent)
+	}
+	
+	prettyJSON, err := json.MarshalIndent(usuarios, "", "  ")
+
+	if StatusInternalServerError(w, err, "Error interno del servidor") {
+		return
+	}
+
+	
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(prettyJSON)
+	
 
 }
