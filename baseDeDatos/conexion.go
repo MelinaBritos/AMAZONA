@@ -46,6 +46,7 @@ func ObtenerDSNV2() (string, error) {
 }
 func ObtenerDSN() (string, error) {
 
+	
 	err := godotenv.Load(".env.example")
 	if err != nil {
 		return os.Getenv("DSN"), err
