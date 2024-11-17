@@ -311,7 +311,7 @@ func Deshabilitar(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	username := params["username"]
 
-	err := baseDeDatos.DB.Where("username = ?", username).Update("deleted_at", time.Now()).Error
+	err := baseDeDatos.DB.Model(&Usuario{}).Where("username = ?", username).Update("deleted_at", time.Now()).Error
 	if StatusInternalServerError(w, err, "Hubo un problema al deshabilitar el usuario") {
 		return
 	}
