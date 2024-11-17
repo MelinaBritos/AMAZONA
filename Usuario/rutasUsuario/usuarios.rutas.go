@@ -3,6 +3,7 @@ package rutasUsuario
 import (
 	"encoding/json"
 	"errors"
+	"time"
 
 	"net/http"
 
@@ -306,12 +307,11 @@ func Eliminar(w http.ResponseWriter, r *http.Request) {
 }
 
 func Deshabilitar(w http.ResponseWriter, r *http.Request) {
-	var usuario Usuario
-
+	
 	params := mux.Vars(r)
 	username := params["username"]
 
-	err := baseDeDatos.DB.Where("username = ?", username).Delete(&usuario).Error
+	err := baseDeDatos.DB.Where("username = ?", username).Update("deleted_at", time.Now()).Error
 	if StatusInternalServerError(w, err, "Hubo un problema al deshabilitar el usuario") {
 		return
 	}
@@ -423,5 +423,37 @@ func GetByStatus(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write(prettyJSON)
 	
+
+}
+
+func Habilitar(w http.ResponseWriter, r *http.Request){
+	var user Usuario
+	parametros := mux.Vars(r)
+	username := parametros["username"]
+	
+	err := baseDeDatos.DB.Unscoped().Where("username = ?", username).Find(&user).Error
+
+	if StatusNotFound(w, err,  "not found user"){return}
+
+	if user.DeletedAt.Valid  {
+		user.DeletedAt.Valid = false
+		user.DeletedAt.Time = time.Time{} // Establecemos el valor en cero
+
+		err = baseDeDatos.DB.Save(&user).Error
+		if err != nil {
+			http.Error(w, "Failed to enable user", http.StatusInternalServerError)
+			return
+		}
+	}
+
+	prettyJSON, err := json.MarshalIndent(user, "", "  ")
+
+	if StatusInternalServerError(w, err, "Error interno del servidor") {
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(prettyJSON)
+
 
 }

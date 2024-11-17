@@ -12,7 +12,12 @@ func EndpointsUsuario(r *mux.Router) {
 	Get(r)
 	Put(r)
 	Post(r)
+	Patch(r)
 	Delete(r)
+}
+
+func Patch(r *mux.Router) {
+	r.HandleFunc("/usuarios/habilitar/{username}", UserService.Habilitar).Methods("PATCH")
 }
 
 func Delete(r *mux.Router) {
