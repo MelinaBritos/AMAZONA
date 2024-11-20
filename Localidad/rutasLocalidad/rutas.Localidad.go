@@ -123,3 +123,14 @@ func GetLocalidadesPorZonaHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 }
+
+func GetZonasHandler(w http.ResponseWriter, r *http.Request) {
+
+	zonas := dataLocalidad.ObtenerZonas()
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(zonas); err != nil {
+		http.Error(w, "Error al codificar zonas en JSON", http.StatusInternalServerError)
+		return
+	}
+}
