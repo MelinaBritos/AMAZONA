@@ -79,3 +79,8 @@ func ObtenerLocalidadesPorZona(zona string) ([]modelosLocalidad.Localidad, error
 
 	return localidades, nil
 }
+
+func ObtenerZonas() []modelosLocalidad.Zona {
+
+	return modelosLocalidad.ObtenerZonasValidas()
+}

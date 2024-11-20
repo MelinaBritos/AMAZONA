@@ -106,25 +106,25 @@ func DeletePaqueteHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func GetPaquetesAsignadosAConductorHandler(w http.ResponseWriter, r *http.Request) {
+// func GetPaquetesAsignadosAConductorHandler(w http.ResponseWriter, r *http.Request) {
 
-	params := mux.Vars(r)
-	id_conductor := params["id"]
+// 	params := mux.Vars(r)
+// 	id_conductor := params["id"]
 
-	paquetes, err := dataPaquete.ObtenerPaquetesDeConductor(id_conductor)
-	if err != nil {
-		http.Error(w, "Error al obtener los paquetes: "+err.Error(), http.StatusInternalServerError)
-		return
-	}
+// 	paquetes, err := dataPaquete.ObtenerPaquetesDeConductor(id_conductor)
+// 	if err != nil {
+// 		http.Error(w, "Error al obtener los paquetes: "+err.Error(), http.StatusInternalServerError)
+// 		return
+// 	}
 
-	// Si todo está bien, retornamos los paquetes como JSON
-	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(paquetes); err != nil {
-		http.Error(w, "Error al codificar los paquetes a JSON: "+err.Error(), http.StatusInternalServerError)
-		return
-	}
+// 	// Si todo está bien, retornamos los paquetes como JSON
+// 	w.Header().Set("Content-Type", "application/json")
+// 	if err := json.NewEncoder(w).Encode(paquetes); err != nil {
+// 		http.Error(w, "Error al codificar los paquetes a JSON: "+err.Error(), http.StatusInternalServerError)
+// 		return
+// 	}
 
-}
+// }
 
 func GetPaquetesSinAsignar(w http.ResponseWriter, r *http.Request) {
 	paquetes := dataPaquete.ObtenerPaquetesSinAsignar()
@@ -135,4 +135,5 @@ func GetPaquetesSinAsignar(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error al codificar paquetes en JSON", http.StatusInternalServerError)
 		return
 	}
+
 }
