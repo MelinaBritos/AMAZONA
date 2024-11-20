@@ -135,4 +135,16 @@ func GetPaquetesSinAsignar(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error al codificar paquetes en JSON", http.StatusInternalServerError)
 		return
 	}
+
+}
+
+func GetPaquetesSinAsignar(w http.ResponseWriter, r *http.Request) {
+	paquetes := dataPaquete.ObtenerPaquetesSinAsignar()
+
+	w.Header().Set("Content-Type", "application/json")
+
+	if err := json.NewEncoder(w).Encode(paquetes); err != nil {
+		http.Error(w, "Error al codificar paquetes en JSON", http.StatusInternalServerError)
+		return
+	}
 }
