@@ -24,6 +24,7 @@ func Conexiondb() {
 
 	DSN, err := ObtenerDSNV2()
 
+	
 	if err != nil {
 		log.Fatal(err)
 		println("Probando otros metodos...")
@@ -45,6 +46,7 @@ func ObtenerDSNV2() (string, error) {
 	return dsn, nil
 }
 func ObtenerDSN() (string, error) {
+
 
 	err := godotenv.Load(".env.example")
 	if err != nil {

@@ -21,6 +21,7 @@ type Usuario struct {
 	gorm.Model
 
 	Username string `gorm:"primaryKey" json:"username"`
+	DeletedAt gorm.DeletedAt `gorm:"index"`
 	Clave    string `json:"clave"`
 	Nombre   string `json:"nombre"`
 	Apellido string `json:"apellido"`
