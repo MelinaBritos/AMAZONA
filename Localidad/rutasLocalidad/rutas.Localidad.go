@@ -133,4 +133,5 @@ func GetZonasHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error al codificar zonas en JSON", http.StatusInternalServerError)
 		return
 	}
+
 }
