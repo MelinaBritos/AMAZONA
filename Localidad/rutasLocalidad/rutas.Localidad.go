@@ -137,9 +137,10 @@ func GetZonasHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	// Codificar la respuesta en JSON
-	if err := json.NewEncoder(w).Encode(respuesta); err != nil {
+	if err := json.NewEncoder(w).Encode(&respuesta); err != nil {
 		//log.Printf("Error al codificar zonas: %v", err)
 		http.Error(w, `{"error": "Error al codificar zonas en JSON"}`, http.StatusInternalServerError)
 		return
 	}
+
 }
