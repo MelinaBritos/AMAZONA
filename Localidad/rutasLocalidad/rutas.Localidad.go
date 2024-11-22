@@ -128,9 +128,18 @@ func GetZonasHandler(w http.ResponseWriter, r *http.Request) {
 
 	zonas := dataLocalidad.ObtenerZonas()
 
+	// Envolver las zonas en un objeto JSON
+	respuesta := map[string]interface{}{
+		"zonas": zonas,
+	}
+
+	// Configurar el encabezado HTTP
 	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(&zonas); err != nil {
-		http.Error(w, "Error al codificar zonas en JSON", http.StatusInternalServerError)
+
+	// Codificar la respuesta en JSON
+	if err := json.NewEncoder(w).Encode(&respuesta); err != nil {
+		//log.Printf("Error al codificar zonas: %v", err)
+		http.Error(w, `{"error": "Error al codificar zonas en JSON"}`, http.StatusInternalServerError)
 		return
 	}
 
