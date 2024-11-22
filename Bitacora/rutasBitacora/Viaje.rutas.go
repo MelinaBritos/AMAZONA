@@ -59,7 +59,7 @@ func PostViajeHandler(w http.ResponseWriter, r *http.Request) {
 
 	tx := baseDeDatos.DB.Begin()
 
-	Viaje.FechaAsignacion = time.Now().Format("02-01-2006")
+	Viaje.FechaAsignacion = time.Now()
 	Viaje.Estado = "ASIGNADO"
 	ViajeCreado := tx.Create(&Viaje)
 	tx.Save(Viaje)
@@ -112,7 +112,7 @@ func PutViajeIniciadoHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	viaje.FechaInicio = time.Now().Format("02-01-2006")
+	viaje.FechaInicio = time.Now()
 	viaje.Estado = "EN CURSO"
 	tx.Save(&viaje)
 
@@ -163,8 +163,7 @@ func PutViajeFinalizadoHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	viaje.FechaFinalizacion = time.Now().Format("02-01-2006")
-	// aca habria que hacer un registro de costosViaje
+	viaje.FechaFinalizacion = time.Now()
 	tx.Save(viaje)
 
 	// vehiculo deja de estar en viaje
@@ -193,7 +192,7 @@ func PutViajeFinalizadoHandler(w http.ResponseWriter, r *http.Request) {
 		entrega.IDPaquete = int(paquete.ID)
 		entrega.UsernameConductor = viaje.UsernameConductor
 		entrega.DireccionEntrega = paquete.Dir_entrega
-		entrega.FechaEntrega = time.Now().Format("02-01-2006")
+		entrega.FechaEntrega = time.Now()
 
 		entregaCreada := tx.Create(&entrega)
 		err := entregaCreada.Error
@@ -228,10 +227,8 @@ func DeleteViajeHandler(w http.ResponseWriter, r *http.Request) {
 func validarViaje(viaje modelosBitacora.Viaje) error {
 
 	// fecha valida
-	layout := "02-01-2006"
-	_, err0 := time.Parse(layout, viaje.FechaReservaViaje)
-	if err0 != nil {
-		return errors.New("la fecha del viaje no cumple el formato dd-mm-yyyy")
+	if viaje.FechaReservaViaje.IsZero() {
+		return errors.New("la fecha del viaje esta vacia")
 	}
 	// vehiculo existente
 	var vehiculo modelosBitacora.Vehiculo

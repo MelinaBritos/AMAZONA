@@ -57,7 +57,7 @@ func PostTicketHandler(w http.ResponseWriter, r *http.Request) {
 
 	tx := baseDeDatos.DB.Begin()
 
-	ticket.FechaCreacion = time.Now().Format("02-01-2006")
+	ticket.FechaCreacion = time.Now()
 	ticket.Estado = "EN CURSO"
 
 	ticketCreado := tx.Create(&ticket)
@@ -104,7 +104,7 @@ func PutTicketHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ticketInput.FechaFinalizacion = time.Now().Format("02-01-2006")
+	ticketInput.FechaFinalizacion = time.Now()
 	tx.Save(ticketInput)
 
 	if err := tx.Model(&ticket).Omit("FechaCreacion").Updates(ticketInput).Error; err != nil {
@@ -161,7 +161,7 @@ func restarStockYcompras(repuestos []modelosBitacora.RepuestoUtilizado) error {
 			historialNuevo.RepuestoComprado = repuesto
 			historialNuevo.Cantidad = repuesto.Cantidad_a_comprar
 			historialNuevo.Costo = float32(repuesto.Cantidad_a_comprar) * repuesto.Costo
-			historialNuevo.FechaCompra = time.Now().Format("02-01-2006")
+			historialNuevo.FechaCompra = time.Now()
 
 			historialCreado := tx.Create(&historialNuevo)
 			err := historialCreado.Error
