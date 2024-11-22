@@ -13,5 +13,6 @@ func EndpointsLocalidad(r *mux.Router) {
 	r.HandleFunc("/localidad", rutasLocalidad.PostLocalidadHandler).Methods("POST")                 //crear un localidad
 	r.HandleFunc("/localidad/{id}", rutasLocalidad.DeleteLocalidadHandler).Methods("DELETE")        //crear un localidad
 	r.HandleFunc("/localidades/{zona}", rutasLocalidad.GetLocalidadesPorZonaHandler).Methods("GET") //crear un localidad
+	r.HandleFunc("/zonas", rutasLocalidad.GetZonasHandler).Methods("GET")                           //crear un localidad
 
 }

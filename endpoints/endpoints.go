@@ -14,7 +14,7 @@ func GenerarEndpoints() {
 
 	r := mux.NewRouter()
 
-	port, err := CargarPuertoV2()
+	port, err := CargarPuerto()
 
 	if err != nil {
 		println(err)
