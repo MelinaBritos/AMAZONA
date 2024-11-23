@@ -240,22 +240,19 @@ func validarViaje(viaje modelosBitacora.Viaje) error {
 	if vehiculo.Estado == "NO APTO PARA CIRCULAR" || vehiculo.Estado == "REPARACION" || vehiculo.Estado == "MANTENIMIENTO" {
 		return errors.New("estado de vehiculo invalido para realizar un viaje")
 	}
-	// usuario existente
-	var usuario modelosUsuario.Usuario
-	err1 := baseDeDatos.DB.Where("username = ?", viaje.UsernameConductor).First(&usuario).Error
-	if err1 != nil {
-		return errors.New("el usuario no existe: " + viaje.UsernameConductor)
-	}
-	// vehiculo y conductor disponibles para la fecha del viaje
+	// vehiculo disponible para la fecha del viaje
 	var viajes []modelosBitacora.Viaje
 	baseDeDatos.DB.Find(&viajes)
 	for _, Viaje := range viajes {
 		if Viaje.Matricula == viaje.Matricula && Viaje.FechaReservaViaje == viaje.FechaReservaViaje {
 			return errors.New("el vehiculo ya esta reservado para esa fecha")
 		}
-		if Viaje.UsernameConductor == viaje.UsernameConductor && Viaje.FechaReservaViaje == viaje.FechaReservaViaje {
-			return errors.New("el conductor ya tiene reservado un viaje para esa fecha")
-		}
+	}
+	// usuario existente
+	var usuario modelosUsuario.Usuario
+	err1 := baseDeDatos.DB.Where("username = ?", viaje.UsernameConductor).First(&usuario).Error
+	if err1 != nil {
+		return errors.New("el usuario no existe: " + viaje.UsernameConductor)
 	}
 	// paquete existente , con estado valido "sin asignar"
 	var pesoTotalPaquetes float32
