@@ -1,6 +1,8 @@
 package modelosBitacora
 
 import (
+	"time"
+
 	"github.com/MelinaBritos/TP-Principal-AMAZONA/Proveedor/modelosProveedor"
 	"gorm.io/gorm"
 )
@@ -12,5 +14,5 @@ type HistorialCompras struct {
 	RepuestoComprado   modelosProveedor.Repuesto
 	Cantidad           int
 	Costo              float32
-	FechaCompra        string
+	FechaCompra        time.Time `gorm:"not null;type:date"`
 }

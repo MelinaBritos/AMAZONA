@@ -110,7 +110,7 @@ func PostVehiculoHandler(w http.ResponseWriter, r *http.Request) {
 
 	tx := baseDeDatos.DB.Begin()
 	for _, vehiculo := range vehiculos {
-		vehiculo.FechaIngreso = time.Now().Format("02-01-2006")
+		vehiculo.FechaIngreso = time.Now()
 		vehiculoCreado := tx.Create(&vehiculo)
 
 		err := vehiculoCreado.Error
@@ -185,17 +185,18 @@ func validarVehiculo(vehiculo modelosBitacora.Vehiculo) error {
 		return errors.New("estado de VTV invalido")
 	}
 
+	// validar fechaVTV, no vencida
+	if vehiculo.FechaVTV.IsZero() {
+		return errors.New("la fecha no puede ser nula o vacía")
+	}
 	Ahora := time.Now()
 	UnAñoAtras := Ahora.AddDate(-1, 0, 0)
-	layout := "02-01-2006"
-	FechaVTV, err := time.Parse(layout, vehiculo.FechaVTV)
-	if err != nil {
-		return errors.New("la fecha de la VTV no cumple el formato dd-mm-yyyy")
+	if vehiculo.FechaVTV.Before(UnAñoAtras) || vehiculo.FechaVTV.After(Ahora) {
+		if vehiculo.Estado == "APROBADA" {
+			return errors.New("la vtv esta vencida")
+		}
 	}
 
-	if (FechaVTV).Before(UnAñoAtras) && vehiculo.EstadoVTV == "APROBADA" {
-		return errors.New("la vtv esta vencida")
-	}
 	if vehiculo.Estado == "APTO PARA CIRCULAR" && (vehiculo.EstadoVTV == "RECHAZADA" || vehiculo.EstadoVTV == "VENCIDA") {
 		return errors.New("el vehiculo no es apto para circular")
 	}

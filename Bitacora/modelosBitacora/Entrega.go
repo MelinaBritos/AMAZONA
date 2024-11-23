@@ -1,6 +1,10 @@
 package modelosBitacora
 
-import "gorm.io/gorm"
+import (
+	"time"
+
+	"gorm.io/gorm"
+)
 
 type Entrega struct {
 	gorm.Model
@@ -9,5 +13,5 @@ type Entrega struct {
 	IDPaquete         int    `gorm:"not null"`
 	UsernameConductor string `gorm:"not null"`
 	DireccionEntrega  string
-	FechaEntrega      string `gorm:"not null"`
+	FechaEntrega      time.Time `gorm:"not null;type:date"`
 }
