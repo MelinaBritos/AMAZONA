@@ -32,6 +32,7 @@ func GenerarEndpoints() {
 	EndpointsViaje(r)
 	EndpointsEntrega(r)
 	EndpointsLocalidad(r)
+	EndpointsCostosViaje(r)
 
 	corsHandler := handlers.CORS(
 		handlers.AllowedOrigins([]string{"*"}),

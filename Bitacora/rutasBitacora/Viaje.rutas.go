@@ -3,10 +3,12 @@ package rutasBitacora
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/MelinaBritos/TP-Principal-AMAZONA/Bitacora/modelosBitacora"
+	dataPaquete "github.com/MelinaBritos/TP-Principal-AMAZONA/Paquete"
 	"github.com/MelinaBritos/TP-Principal-AMAZONA/Paquete/modelosPaquete"
 	"github.com/MelinaBritos/TP-Principal-AMAZONA/Usuario/modelosUsuario"
 	"github.com/MelinaBritos/TP-Principal-AMAZONA/baseDeDatos"
@@ -57,7 +59,7 @@ func PostViajeHandler(w http.ResponseWriter, r *http.Request) {
 
 	tx := baseDeDatos.DB.Begin()
 
-	Viaje.FechaAsignacion = time.Now().Format("02-01-2006")
+	Viaje.FechaAsignacion = time.Now()
 	Viaje.Estado = "ASIGNADO"
 	ViajeCreado := tx.Create(&Viaje)
 	tx.Save(Viaje)
@@ -70,18 +72,30 @@ func PostViajeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, paqueteViaje := range Viaje.Paquetes {
-		var paquete modelosPaquete.Paquete
-		err := baseDeDatos.DB.Where("ID = ?", paqueteViaje.ID).First(&paquete).Error
+		paquete, err := dataPaquete.ObtenerPaquete(fmt.Sprint(paqueteViaje.ID))
 		if err != nil {
 			tx.Rollback()
 			http.Error(w, "Error al encontrar paquete: "+err.Error(), http.StatusInternalServerError)
+			return
 		}
-		paquete.Estado = "ASIGNADO"
-		paquete.Id_viaje = int(Viaje.ID)
-		tx.Save(&paquete)
+
+		if err := dataPaquete.ActualizarEstadoPaquete(tx, &paquete, modelosPaquete.ASIGNADO); err != nil {
+			tx.Rollback()
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		if err := dataPaquete.AsignarViajeAPaquete(tx, Viaje.ID, &paquete); err != nil {
+			tx.Rollback()
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 
-	tx.Commit()
+	if err := tx.Commit().Error; err != nil {
+		http.Error(w, "Error al confirmar la transacción: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -98,12 +112,16 @@ func PutViajeIniciadoHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+<<<<<<< HEAD
 	if viaje.FechaReservaViaje != time.Now().Format("02-01-2006") {
 		tx.Rollback()
 		http.Error(w, "No puede iniciarse el viaje porque no es la fecha asignada", http.StatusInternalServerError)
 	}
 
 	viaje.FechaInicio = time.Now().Format("02-01-2006")
+=======
+	viaje.FechaInicio = time.Now()
+>>>>>>> main
 	viaje.Estado = "EN CURSO"
 	tx.Save(&viaje)
 
@@ -114,24 +132,25 @@ func PutViajeIniciadoHandler(w http.ResponseWriter, r *http.Request) {
 		tx.Rollback()
 		http.Error(w, "Error al encontrar vehiculo: "+err.Error(), http.StatusInternalServerError)
 	}
+
 	if vehiculo.Estado == "EN VIAJE" {
 		tx.Rollback()
-		http.Error(w, "El vehiculo ya esta en viaje", http.StatusInternalServerError)
+		mensajeError := fmt.Sprintf("El vehiculo ya esta en viaje. Su estado es: %s y su matricula es : %s", vehiculo.Estado, vehiculo.Matricula)
+		http.Error(w, mensajeError, http.StatusInternalServerError)
 	}
+
 	vehiculo.Estado = "EN VIAJE"
 	tx.Save(&vehiculo)
 
 	// paquetes pasan a estar en viaje
-	var paquetes []modelosPaquete.Paquete
-	baseDeDatos.DB.Find(&paquetes)
+	paquetes, err := dataPaquete.ObtenerPaquetesPorViaje(viaje.ID)
+	if err != nil {
+		http.Error(w, "Error al obtener los paquetes por viaje: "+err.Error(), http.StatusInternalServerError)
+	}
+
 	for _, paquete := range paquetes {
-		if paquete.Id_viaje == int(viaje.ID) {
-			if paquete.Estado == "EN VIAJE" {
-				tx.Rollback()
-				http.Error(w, "El paquete ya esta en viaje", http.StatusInternalServerError)
-			}
-			paquete.Estado = "EN VIAJE"
-			tx.Save(&paquete)
+		if err := dataPaquete.ActualizarEstadoPaquete(tx, &paquete, modelosPaquete.EN_VIAJE); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 	}
 
@@ -153,8 +172,7 @@ func PutViajeFinalizadoHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	viaje.FechaFinalizacion = time.Now().Format("02-01-2006")
-	// aca habria que hacer un registro de costosViaje
+	viaje.FechaFinalizacion = time.Now()
 	tx.Save(viaje)
 
 	// vehiculo deja de estar en viaje
@@ -168,27 +186,28 @@ func PutViajeFinalizadoHandler(w http.ResponseWriter, r *http.Request) {
 	tx.Save(&vehiculo)
 
 	// paquetes pasan a no entregado si no fueron entregados en el viaje
-	var paquetes []modelosPaquete.Paquete
-	baseDeDatos.DB.Find(&paquetes)
-	for _, paquete := range paquetes {
-		if paquete.Id_viaje == int(viaje.ID) {
-			if paquete.Estado != "ENTREGADO" {
-				paquete.Estado = "NO ENTREGADO"
-				tx.Save(&paquete)
-			}
-			var entrega modelosBitacora.Entrega
-			entrega.IDViaje = int(viaje.ID)
-			entrega.IDPaquete = int(paquete.ID)
-			entrega.UsernameConductor = viaje.UsernameConductor
-			entrega.DireccionEntrega = paquete.Dir_entrega
-			entrega.FechaEntrega = time.Now().Format("02-01-2006")
+	paquetes, err := dataPaquete.ObtenerPaquetesPorViaje(viaje.ID)
+	if err != nil {
+		tx.Rollback()
+		http.Error(w, "Error al obtener los paquetes por viaje: "+err.Error(), http.StatusInternalServerError)
+	}
 
-			entregaCreada := tx.Create(&entrega)
-			err := entregaCreada.Error
-			if err != nil {
-				tx.Rollback()
-				http.Error(w, "Error al registrar entrega: "+err.Error(), http.StatusInternalServerError)
-			}
+	for _, paquete := range paquetes {
+		if paquete.Estado != modelosPaquete.ENTREGADO {
+			dataPaquete.ActualizarEstadoPaquete(tx, &paquete, modelosPaquete.NO_ENTREGADO)
+		}
+		var entrega modelosBitacora.Entrega
+		entrega.IDViaje = int(viaje.ID)
+		entrega.IDPaquete = int(paquete.ID)
+		entrega.UsernameConductor = viaje.UsernameConductor
+		entrega.DireccionEntrega = paquete.Dir_entrega
+		entrega.FechaEntrega = time.Now()
+
+		entregaCreada := tx.Create(&entrega)
+		err := entregaCreada.Error
+		if err != nil {
+			tx.Rollback()
+			http.Error(w, "Error al registrar entrega: "+err.Error(), http.StatusInternalServerError)
 		}
 	}
 
@@ -217,10 +236,8 @@ func DeleteViajeHandler(w http.ResponseWriter, r *http.Request) {
 func validarViaje(viaje modelosBitacora.Viaje) error {
 
 	// fecha valida
-	layout := "02-01-2006"
-	_, err0 := time.Parse(layout, viaje.FechaReservaViaje)
-	if err0 != nil {
-		return errors.New("la fecha del viaje no cumple el formato dd-mm-yyyy")
+	if viaje.FechaReservaViaje.IsZero() {
+		return errors.New("la fecha del viaje esta vacia")
 	}
 	// vehiculo existente
 	var vehiculo modelosBitacora.Vehiculo
@@ -253,13 +270,13 @@ func validarViaje(viaje modelosBitacora.Viaje) error {
 	var pesoTotalPaquetes float32
 	var volumenTotalPaquetes float32
 	for _, paqueteViaje := range viaje.Paquetes {
-		var paquete modelosPaquete.Paquete
-		err := baseDeDatos.DB.Where("ID = ?", paqueteViaje.ID).First(&paquete).Error
+		paquete, err := dataPaquete.ObtenerPaquete(fmt.Sprint(paqueteViaje.ID))
 		if err != nil {
-			return errors.New("el paquete no existe")
+			return fmt.Errorf("paquete con ID %v no encontrado: %w", paqueteViaje.ID, err)
 		}
-		if paquete.Estado == "EN VIAJE" || paquete.Estado == "ASIGNADO" || paquete.Estado == "ENTREGADO" || paquete.Estado == "NO ENTREGADO" {
-			return errors.New("el paquete no esta disponible para asignar")
+
+		if paquete.Estado != modelosPaquete.SIN_ASIGNAR {
+			return fmt.Errorf("paquete con ID %v no está disponible para asignar (estado actual: %v)", paqueteViaje.ID, paquete.Estado)
 		}
 
 		pesoTotalPaquetes += paqueteViaje.Peso_kg

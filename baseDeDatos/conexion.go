@@ -67,9 +67,11 @@ func CrearTablas() {
 	DB.AutoMigrate(modelosBitacora.Ticket{})
 	DB.AutoMigrate(modelosBitacora.HistorialCompras{})
 	DB.AutoMigrate(modelosPaquete.Paquete{})
+	DB.AutoMigrate(modelosPaquete.HistorialPaquete{})
 	DB.AutoMigrate(modelosLogs.Log{})
 	DB.AutoMigrate(modelosBitacora.Viaje{})
 	DB.AutoMigrate(modelosBitacora.CostosViaje{})
 	DB.AutoMigrate(modelosBitacora.Entrega{})
 	DB.AutoMigrate(modelosLocalidad.Localidad{})
+	DB.AutoMigrate(modelosBitacora.IngresosViaje{})
 }
