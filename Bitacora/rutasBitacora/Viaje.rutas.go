@@ -112,16 +112,7 @@ func PutViajeIniciadoHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-<<<<<<< HEAD
-	if viaje.FechaReservaViaje != time.Now().Format("02-01-2006") {
-		tx.Rollback()
-		http.Error(w, "No puede iniciarse el viaje porque no es la fecha asignada", http.StatusInternalServerError)
-	}
-
-	viaje.FechaInicio = time.Now().Format("02-01-2006")
-=======
 	viaje.FechaInicio = time.Now()
->>>>>>> main
 	viaje.Estado = "EN CURSO"
 	tx.Save(&viaje)
 
