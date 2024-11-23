@@ -20,16 +20,6 @@ func ObtenerPaquetes() []modelosPaquete.Paquete {
 
 func ObtenerPaquete(id_paquete string) (modelosPaquete.Paquete, error) {
 
-	id_paquete_uint, err := strconv.ParseUint(id_paquete, 10, 32)
-	if err != nil {
-		return modelosPaquete.Paquete{}, err
-	}
-
-	return obtenerPaquete(uint(id_paquete_uint))
-}
-
-func obtenerPaquete(id_paquete uint) (modelosPaquete.Paquete, error) {
-
 	var paquete modelosPaquete.Paquete
 	if err := baseDeDatos.DB.Where("id = ?", id_paquete).First(&paquete).Error; err != nil {
 		return paquete, err
@@ -45,15 +35,9 @@ func CrearPaquetes(paquetes []modelosPaquete.Paquete) error {
 		return err
 	}
 
-	for _, paquete := range paquetes {
-		if err := agregarHistorialPaquete(tx, paquete.ID, modelosPaquete.SIN_ASIGNAR); err != nil {
-			tx.Rollback()
+	for paquete := range paquetes {
+		if err := agregarHistorialPaquete(tx, uint(paquete), modelosPaquete.SIN_ASIGNAR); err != nil {
 			return fmt.Errorf("error al actualizar el historial del paquete: %w", err)
-		}
-		precio := dataLocalidad.ObtenerPrecioLocalidad(paquete.Localidad)
-		if err := dataLocalidad.CargarIngreso(tx, paquete.Id_viaje, paquete.ID, precio); err != nil {
-			tx.Rollback()
-			return fmt.Errorf("error al cargar un nuevo ingreso de dinero: %w", err)
 		}
 	}
 
@@ -97,11 +81,19 @@ func BorrarPaquete(id_paquete string) error {
 func ActualizarEstadoPaquete(tx *gorm.DB, paquete *modelosPaquete.Paquete, estado modelosPaquete.Estado) error {
 
 	paquete.Estado = estado
+func ActualizarEstadoPaquete(tx *gorm.DB, paquete *modelosPaquete.Paquete, estado modelosPaquete.Estado) error {
+
+	paquete.Estado = estado
 
 	if err := tx.Save(&paquete).Error; err != nil {
 		return fmt.Errorf("error al actualizar el estado del paquete: %w", err)
 	}
 
+	if err := agregarHistorialPaquete(tx, paquete.ID, estado); err != nil {
+		return fmt.Errorf("error al actualizar el historial del paquete: %w", err)
+	}
+
+	return tx.Error
 	if err := agregarHistorialPaquete(tx, paquete.ID, estado); err != nil {
 		return fmt.Errorf("error al actualizar el historial del paquete: %w", err)
 	}
