@@ -66,7 +66,6 @@ func PostLocalidadHandler(w http.ResponseWriter, r *http.Request) {
 func PutLocalidadHandler(w http.ResponseWriter, r *http.Request) {
 	var localidadesInput []*modelosLocalidad.Localidad
 
-	// Decodificar el cuerpo de la solicitud en un slice de localidades
 	if err := json.NewDecoder(r.Body).Decode(&localidadesInput); err != nil {
 		http.Error(w, "Error al decodificar las localidades: "+err.Error(), http.StatusBadRequest)
 		return
@@ -79,13 +78,11 @@ func PutLocalidadHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Actualizar los localidades en la base de datos
 	if err := dataLocalidad.ActualizarLocalidades(localidadesInput); err != nil {
 		http.Error(w, "Error al actualizar las localidades: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	// Establecer el código de estado a 200 OK
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Localidades actualizadas"))
 }
@@ -115,7 +112,6 @@ func GetLocalidadesPorZonaHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Si todo está bien, retornamos los localidades como JSON
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(localidades); err != nil {
 		http.Error(w, "Error al codificar las localidades a JSON: "+err.Error(), http.StatusInternalServerError)
@@ -128,17 +124,13 @@ func GetZonasHandler(w http.ResponseWriter, r *http.Request) {
 
 	zonas := dataLocalidad.ObtenerZonas()
 
-	// Envolver las zonas en un objeto JSON
 	respuesta := map[string]interface{}{
 		"zonas": zonas,
 	}
 
-	// Configurar el encabezado HTTP
 	w.Header().Set("Content-Type", "application/json")
 
-	// Codificar la respuesta en JSON
 	if err := json.NewEncoder(w).Encode(&respuesta); err != nil {
-		//log.Printf("Error al codificar zonas: %v", err)
 		http.Error(w, `{"error": "Error al codificar zonas en JSON"}`, http.StatusInternalServerError)
 		return
 	}

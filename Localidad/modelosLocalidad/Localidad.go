@@ -8,7 +8,6 @@ import (
 
 type Zona string
 
-// Slice estático que contiene todos los estados válidos
 var zonasValidas = []Zona{
 	CABA,
 	ZONA_SUR,
@@ -31,12 +30,10 @@ type Localidad struct {
 	Costo_localidad  float32 `gorm:"not null"`
 }
 
-// Método para obtener el ID como string
 func (p *Localidad) GetIDAsString() string {
 	return strconv.Itoa(int(p.ID))
 }
 
-// Función para obtener los estados válidos
 func ObtenerZonasValidas() []Zona {
 	return zonasValidas
 }

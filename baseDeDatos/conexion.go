@@ -22,9 +22,8 @@ var DB *gorm.DB
 func Conexiondb() {
 	var err error
 
-	DSN, err := ObtenerDSNV2()
+	DSN, err := ObtenerDSN()
 
-	
 	if err != nil {
 		log.Fatal(err)
 		println("Probando otros metodos...")
@@ -46,7 +45,6 @@ func ObtenerDSNV2() (string, error) {
 	return dsn, nil
 }
 func ObtenerDSN() (string, error) {
-
 
 	err := godotenv.Load(".env.example")
 	if err != nil {
@@ -73,4 +71,5 @@ func CrearTablas() {
 	DB.AutoMigrate(modelosBitacora.CostosViaje{})
 	DB.AutoMigrate(modelosBitacora.Entrega{})
 	DB.AutoMigrate(modelosLocalidad.Localidad{})
+	DB.AutoMigrate(modelosBitacora.IngresosViaje{})
 }
