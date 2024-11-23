@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"time"
 
+	dataLocalidad "github.com/MelinaBritos/TP-Principal-AMAZONA/Localidad"
 	"github.com/MelinaBritos/TP-Principal-AMAZONA/Paquete/modelosPaquete"
 	"github.com/MelinaBritos/TP-Principal-AMAZONA/baseDeDatos"
 	"gorm.io/gorm"
@@ -39,15 +40,20 @@ func obtenerPaquete(id_paquete uint) (modelosPaquete.Paquete, error) {
 func CrearPaquetes(paquetes []modelosPaquete.Paquete) error {
 	tx := baseDeDatos.DB.Begin()
 
-	// Especificar el modelo para la tabla
 	if err := tx.Model(&modelosPaquete.Paquete{}).Create(&paquetes).Error; err != nil {
-		tx.Rollback() // En caso de error, realizar rollback
+		tx.Rollback()
 		return err
 	}
 
-	for paquete := range paquetes {
-		if err := agregarHistorialPaquete(tx, uint(paquete), modelosPaquete.SIN_ASIGNAR); err != nil {
+	for _, paquete := range paquetes {
+		if err := agregarHistorialPaquete(tx, paquete.ID, modelosPaquete.SIN_ASIGNAR); err != nil {
+			tx.Rollback()
 			return fmt.Errorf("error al actualizar el historial del paquete: %w", err)
+		}
+		precio := dataLocalidad.ObtenerPrecioLocalidad(paquete.Localidad)
+		if err := dataLocalidad.CargarIngreso(tx, paquete.Id_viaje, paquete.ID, precio); err != nil {
+			tx.Rollback()
+			return fmt.Errorf("error al cargar un nuevo ingreso de dinero: %w", err)
 		}
 	}
 
@@ -117,7 +123,7 @@ func ObtenerPaquetesDeConductor(id_conductor string) ([]modelosPaquete.Paquete, 
 func ObtenerPaquetesSinAsignar() []modelosPaquete.Paquete {
 
 	var paquetesSinAsignar []modelosPaquete.Paquete
-	baseDeDatos.DB.Where("estado = ?", modelosPaquete.SIN_ASIGNAR).Find(&paquetesSinAsignar)
+	baseDeDatos.DB.Where("estado = ? OR estado = ?", modelosPaquete.SIN_ASIGNAR, modelosPaquete.NO_ENTREGADO).Find(&paquetesSinAsignar)
 	return paquetesSinAsignar
 }
 

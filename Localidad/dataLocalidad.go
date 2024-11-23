@@ -2,9 +2,12 @@ package dataLocalidad
 
 import (
 	"fmt"
+	"time"
 
+	"github.com/MelinaBritos/TP-Principal-AMAZONA/Bitacora/modelosBitacora"
 	"github.com/MelinaBritos/TP-Principal-AMAZONA/Localidad/modelosLocalidad"
 	"github.com/MelinaBritos/TP-Principal-AMAZONA/baseDeDatos"
+	"gorm.io/gorm"
 )
 
 func ObtenerLocalidades() []modelosLocalidad.Localidad {
@@ -24,12 +27,19 @@ func ObtenerLocalidad(id_localidad string) (modelosLocalidad.Localidad, error) {
 
 }
 
+func obtenerLocalidadPorNombre(nombre_localidad string) (modelosLocalidad.Localidad, error) {
+	var localidad modelosLocalidad.Localidad
+	if err := baseDeDatos.DB.Where("nombre_localidad = ?", nombre_localidad).First(&localidad).Error; err != nil {
+		return localidad, err
+	}
+	return localidad, nil
+}
+
 func CrearLocalidades(Localidades []modelosLocalidad.Localidad) error {
 	tx := baseDeDatos.DB.Begin()
 
-	// Especificar el modelo para la tabla
 	if err := tx.Model(&modelosLocalidad.Localidad{}).Create(&Localidades).Error; err != nil {
-		tx.Rollback() // En caso de error, realizar rollback
+		tx.Rollback()
 		return err
 	}
 
@@ -83,4 +93,29 @@ func ObtenerLocalidadesPorZona(zona string) ([]modelosLocalidad.Localidad, error
 func ObtenerZonas() []modelosLocalidad.Zona {
 
 	return modelosLocalidad.ObtenerZonasValidas()
+}
+
+func ObtenerPrecioLocalidad(localidad string) float32 {
+
+	loc, err := obtenerLocalidadPorNombre(localidad)
+	if err != nil {
+		return 0
+	}
+
+	return loc.Costo_localidad
+}
+
+func CargarIngreso(tx *gorm.DB, id_viaje int, id_paquete uint, ingreso float32) error {
+	var ingresoViaje modelosBitacora.IngresosViaje
+	ingresoViaje.IDViaje = id_viaje
+	ingresoViaje.IDPaquete = int(id_paquete)
+	ingresoViaje.Fecha = time.Now()
+	ingresoViaje.Ingreso = ingreso
+
+	if err := tx.Model(&modelosBitacora.IngresosViaje{}).Create(&ingresoViaje).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	return nil
 }

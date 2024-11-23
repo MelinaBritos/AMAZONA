@@ -9,7 +9,6 @@ import (
 
 type Estado string
 
-// Slice estático que contiene todos los estados válidos
 var estadosValidos = []Estado{
 	SIN_ASIGNAR,
 	ASIGNADO,
@@ -38,17 +37,14 @@ type Paquete struct {
 	Dir_entrega        string  `gorm:"not null"`
 }
 
-// Función para obtener los estados válidos
 func ObtenerEstadosValidos() []Estado {
 	return estadosValidos
 }
 
-// Método para obtener el ID como string
 func (p *Paquete) GetIDAsString() string {
 	return strconv.Itoa(int(p.ID))
 }
 
-// Función para convertir string a Estado
 func ParseEstado(s string) (Estado, error) {
 	switch s {
 	case "SIN ASIGNAR":

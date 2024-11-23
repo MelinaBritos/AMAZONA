@@ -6,11 +6,12 @@ import (
 	"gorm.io/gorm"
 )
 
-type IngresosViajes struct {
+
+type IngresosViaje struct {
 	gorm.Model
 
-	IDViaje   int
-	IDPaquete int
-	Fecha     time.Time `gorm:"type:date"`
+	IDViaje   int `gorm:"not null"`
+	IDPaquete int `gorm:"not null"`
+	Fecha     time.Time
 	Ingreso   float32
 }
