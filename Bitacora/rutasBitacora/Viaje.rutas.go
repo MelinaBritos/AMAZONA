@@ -72,7 +72,7 @@ func PostViajeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, paqueteViaje := range Viaje.Paquetes {
-		paquete, err := dataPaquete.ObtenerPaquete(fmt.Sprint(paqueteViaje.ID))
+		paquete, err := dataPaquete.ObtenerPaquete(paqueteViaje.ID)
 		if err != nil {
 			tx.Rollback()
 			http.Error(w, "Error al encontrar paquete: "+err.Error(), http.StatusInternalServerError)
@@ -134,15 +134,23 @@ func PutViajeIniciadoHandler(w http.ResponseWriter, r *http.Request) {
 	tx.Save(&vehiculo)
 
 	// paquetes pasan a estar en viaje
-	paquetes, err := dataPaquete.ObtenerPaquetesPorViaje(viaje.ID)
-	if err != nil {
-		http.Error(w, "Error al obtener los paquetes por viaje: "+err.Error(), http.StatusInternalServerError)
-	}
-
-	for _, paquete := range paquetes {
-		if err := dataPaquete.ActualizarEstadoPaquete(tx, &paquete, modelosPaquete.EN_VIAJE); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+	baseDeDatos.DB.Model(&viaje).Association("Paquetes").Find(&viaje.Paquetes)
+	for _, paqueteViaje := range viaje.Paquetes {
+		var paquete modelosPaquete.Paquete
+		err := baseDeDatos.DB.Where("id = ?", paqueteViaje.ID).First(&paquete).Error
+		if err != nil {
+			tx.Rollback()
+			http.Error(w, "Error al encontrar paquete: "+err.Error(), http.StatusInternalServerError)
 		}
+		if paquete.Estado == "EN VIAJE" {
+			tx.Rollback()
+			http.Error(w, "El paquete ya esta en viaje", http.StatusInternalServerError)
+		}
+
+		paquete.Estado = "EN VIAJE"
+		tx.Save(&paquete)
+		dataPaquete.AgregarHistorialPaquete(tx, paquete.ID, "EN VIAJE")
+
 	}
 
 	tx.Commit()
@@ -164,6 +172,7 @@ func PutViajeFinalizadoHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	viaje.FechaFinalizacion = time.Now()
+	viaje.Estado = "FINALIZADO"
 	tx.Save(viaje)
 
 	// vehiculo deja de estar en viaje
@@ -177,28 +186,32 @@ func PutViajeFinalizadoHandler(w http.ResponseWriter, r *http.Request) {
 	tx.Save(&vehiculo)
 
 	// paquetes pasan a no entregado si no fueron entregados en el viaje
-	paquetes, err := dataPaquete.ObtenerPaquetesPorViaje(viaje.ID)
-	if err != nil {
-		tx.Rollback()
-		http.Error(w, "Error al obtener los paquetes por viaje: "+err.Error(), http.StatusInternalServerError)
-	}
-
-	for _, paquete := range paquetes {
-		if paquete.Estado != modelosPaquete.ENTREGADO {
-			dataPaquete.ActualizarEstadoPaquete(tx, &paquete, modelosPaquete.NO_ENTREGADO)
-		}
-		var entrega modelosBitacora.Entrega
-		entrega.IDViaje = int(viaje.ID)
-		entrega.IDPaquete = int(paquete.ID)
-		entrega.UsernameConductor = viaje.UsernameConductor
-		entrega.DireccionEntrega = paquete.Dir_entrega
-		entrega.FechaEntrega = time.Now()
-
-		entregaCreada := tx.Create(&entrega)
-		err := entregaCreada.Error
+	baseDeDatos.DB.Model(&viaje).Association("Paquetes").Find(&viaje.Paquetes)
+	for _, paqueteViaje := range viaje.Paquetes {
+		var paquete modelosPaquete.Paquete
+		err := baseDeDatos.DB.Where("id = ?", paqueteViaje.ID).First(&paquete).Error
 		if err != nil {
 			tx.Rollback()
-			http.Error(w, "Error al registrar entrega: "+err.Error(), http.StatusInternalServerError)
+			http.Error(w, "Error al encontrar paquete: "+err.Error(), http.StatusInternalServerError)
+		}
+		if paquete.Estado != "ENTREGADO" {
+			paquete.Estado = "NO ENTREGADO"
+			tx.Save(&paquete)
+			dataPaquete.AgregarHistorialPaquete(tx, paquete.ID, "NO ENTREGADO")
+		} else {
+			var entrega modelosBitacora.Entrega
+			entrega.IDViaje = int(viaje.ID)
+			entrega.IDPaquete = int(paquete.ID)
+			entrega.UsernameConductor = viaje.UsernameConductor
+			entrega.DireccionEntrega = paquete.Dir_entrega
+			entrega.FechaEntrega = time.Now()
+
+			entregaCreada := tx.Create(&entrega)
+			err := entregaCreada.Error
+			if err != nil {
+				tx.Rollback()
+				http.Error(w, "Error al registrar entrega: "+err.Error(), http.StatusInternalServerError)
+			}
 		}
 	}
 
@@ -219,9 +232,29 @@ func DeleteViajeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	baseDeDatos.DB.Unscoped().Delete(&viaje)
-	w.WriteHeader(http.StatusOK)
+	tx := baseDeDatos.DB.Begin()
 
+	baseDeDatos.DB.Model(&viaje).Association("Paquetes").Find(&viaje.Paquetes)
+
+	for _, paqueteViaje := range viaje.Paquetes {
+		var paquete modelosPaquete.Paquete
+		err := baseDeDatos.DB.Where("ID = ?", paqueteViaje.ID).First(&paquete).Error
+		if err != nil {
+			tx.Rollback()
+			http.Error(w, "Error al encontrar paquete: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+		paquete.Estado = "SIN ASIGNAR"
+		paquete.Id_viaje = 0
+		tx.Save(&paquete)
+		dataPaquete.AgregarHistorialPaquete(tx, paquete.ID, "SIN ASIGNAR")
+	}
+
+	tx.Delete(&viaje)
+
+	tx.Commit()
+
+	w.WriteHeader(http.StatusOK)
 }
 
 func validarViaje(viaje modelosBitacora.Viaje) error {
@@ -240,28 +273,25 @@ func validarViaje(viaje modelosBitacora.Viaje) error {
 	if vehiculo.Estado == "NO APTO PARA CIRCULAR" || vehiculo.Estado == "REPARACION" || vehiculo.Estado == "MANTENIMIENTO" {
 		return errors.New("estado de vehiculo invalido para realizar un viaje")
 	}
-	// usuario existente
-	var usuario modelosUsuario.Usuario
-	err1 := baseDeDatos.DB.Where("username = ?", viaje.UsernameConductor).First(&usuario).Error
-	if err1 != nil {
-		return errors.New("el usuario no existe: " + viaje.UsernameConductor)
-	}
-	// vehiculo y conductor disponibles para la fecha del viaje
+	// vehiculo disponible para la fecha del viaje
 	var viajes []modelosBitacora.Viaje
 	baseDeDatos.DB.Find(&viajes)
 	for _, Viaje := range viajes {
 		if Viaje.Matricula == viaje.Matricula && Viaje.FechaReservaViaje == viaje.FechaReservaViaje {
 			return errors.New("el vehiculo ya esta reservado para esa fecha")
 		}
-		if Viaje.UsernameConductor == viaje.UsernameConductor && Viaje.FechaReservaViaje == viaje.FechaReservaViaje {
-			return errors.New("el conductor ya tiene reservado un viaje para esa fecha")
-		}
+	}
+	// usuario existente
+	var usuario modelosUsuario.Usuario
+	err1 := baseDeDatos.DB.Where("username = ?", viaje.UsernameConductor).First(&usuario).Error
+	if err1 != nil {
+		return errors.New("el usuario no existe: " + viaje.UsernameConductor)
 	}
 	// paquete existente , con estado valido "sin asignar"
 	var pesoTotalPaquetes float32
 	var volumenTotalPaquetes float32
 	for _, paqueteViaje := range viaje.Paquetes {
-		paquete, err := dataPaquete.ObtenerPaquete(fmt.Sprint(paqueteViaje.ID))
+		paquete, err := dataPaquete.ObtenerPaquete((paqueteViaje.ID))
 		if err != nil {
 			return fmt.Errorf("paquete con ID %v no encontrado: %w", paqueteViaje.ID, err)
 		}
