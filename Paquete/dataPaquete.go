@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/MelinaBritos/TP-Principal-AMAZONA/Bitacora/modelosBitacora"
 	dataLocalidad "github.com/MelinaBritos/TP-Principal-AMAZONA/Localidad"
 	"github.com/MelinaBritos/TP-Principal-AMAZONA/Paquete/modelosPaquete"
 	"github.com/MelinaBritos/TP-Principal-AMAZONA/baseDeDatos"
@@ -153,9 +154,18 @@ func ObtenerPaquetesPorViaje(id_viaje uint) ([]modelosPaquete.Paquete, error) {
 func AsignarViajeAPaquete(tx *gorm.DB, id_viaje uint, paquete *modelosPaquete.Paquete) error {
 
 	paquete.Id_viaje = int(id_viaje)
-
 	if err := tx.Save(&paquete).Error; err != nil {
 		return fmt.Errorf("error al actualizar el viaje del paquete: %w", err)
+	}
+
+	var ingresoViaje modelosBitacora.IngresosViaje
+	if err := baseDeDatos.DB.Where("idviaje = ?", id_viaje).Find(&ingresoViaje).Error; err != nil {
+		return fmt.Errorf("error al obtener el ingreso de viaje: %w", err)
+	}
+
+	ingresoViaje.IDViaje = int(id_viaje)
+	if err := tx.Save(&ingresoViaje).Error; err != nil {
+		return fmt.Errorf("error al actualizar el ingreso del viaje: %w", err)
 	}
 
 	return tx.Error
