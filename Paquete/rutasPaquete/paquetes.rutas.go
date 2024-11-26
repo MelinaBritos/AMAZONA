@@ -3,6 +3,7 @@ package rutasPaquete
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 
 	dataPaquete "github.com/MelinaBritos/TP-Principal-AMAZONA/Paquete"
 	"github.com/MelinaBritos/TP-Principal-AMAZONA/Paquete/modelosPaquete"
@@ -26,9 +27,9 @@ func GetPaquetesHandler(w http.ResponseWriter, r *http.Request) {
 func GetPaqueteHandler(w http.ResponseWriter, r *http.Request) {
 
 	params := mux.Vars(r)
-	id_paquete := params["id"]
+	id_paquete_uint, err := strconv.ParseUint(params["id"], 10, 32)
 
-	paquete, err := dataPaquete.ObtenerPaquete(id_paquete)
+	paquete, err := dataPaquete.ObtenerPaquete(uint(id_paquete_uint))
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
 		w.Write([]byte("El paquete no existe: " + err.Error()))
@@ -88,7 +89,7 @@ func PutPaqueteHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Paquetes actualizados"))
 }
 
-func DeletePaqueteHandler(w http.ResponseWriter, r *http.Request) {
+/* func DeletePaqueteHandler(w http.ResponseWriter, r *http.Request) {
 
 	params := mux.Vars(r)
 	id_paquete := params["id"]
@@ -100,7 +101,7 @@ func DeletePaqueteHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Write([]byte("Paquete borrado"))
 	w.WriteHeader(http.StatusOK)
-}
+} */
 
 func GetPaquetesSinAsignar(w http.ResponseWriter, r *http.Request) {
 	paquetes := dataPaquete.ObtenerPaquetesSinAsignar()

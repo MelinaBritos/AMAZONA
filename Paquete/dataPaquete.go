@@ -2,7 +2,6 @@ package dataPaquete
 
 import (
 	"fmt"
-	"strconv"
 	"time"
 
 	dataLocalidad "github.com/MelinaBritos/TP-Principal-AMAZONA/Localidad"
@@ -18,17 +17,7 @@ func ObtenerPaquetes() []modelosPaquete.Paquete {
 	return paquetes
 }
 
-func ObtenerPaquete(id_paquete string) (modelosPaquete.Paquete, error) {
-
-	id_paquete_uint, err := strconv.ParseUint(id_paquete, 10, 32)
-	if err != nil {
-		return modelosPaquete.Paquete{}, err
-	}
-
-	return obtenerPaquete(uint(id_paquete_uint))
-}
-
-func obtenerPaquete(id_paquete uint) (modelosPaquete.Paquete, error) {
+func ObtenerPaquete(id_paquete uint) (modelosPaquete.Paquete, error) {
 
 	var paquete modelosPaquete.Paquete
 	if err := baseDeDatos.DB.Where("id = ?", id_paquete).First(&paquete).Error; err != nil {
@@ -46,7 +35,7 @@ func CrearPaquetes(paquetes []modelosPaquete.Paquete) error {
 	}
 
 	for _, paquete := range paquetes {
-		if err := agregarHistorialPaquete(tx, paquete.ID, modelosPaquete.SIN_ASIGNAR); err != nil {
+		if err := AgregarHistorialPaquete(tx, paquete.ID, modelosPaquete.SIN_ASIGNAR); err != nil {
 			tx.Rollback()
 			return fmt.Errorf("error al actualizar el historial del paquete: %w", err)
 		}
@@ -65,7 +54,7 @@ func ActualizarPaquetes(paquetesInput []*modelosPaquete.Paquete) error {
 	tx := baseDeDatos.DB.Begin()
 
 	for _, paqueteInput := range paquetesInput {
-		paqueteExistente, err := obtenerPaquete(paqueteInput.ID)
+		paqueteExistente, err := ObtenerPaquete(paqueteInput.ID)
 		if err != nil {
 			tx.Rollback()
 			return fmt.Errorf("paquete no encontrado: %w", err)
@@ -80,7 +69,7 @@ func ActualizarPaquetes(paquetesInput []*modelosPaquete.Paquete) error {
 	return tx.Commit().Error
 }
 
-func BorrarPaquete(id_paquete string) error {
+func BorrarPaquete(id_paquete uint) error {
 
 	paquete, err := ObtenerPaquete(id_paquete)
 	if err != nil {
@@ -102,7 +91,7 @@ func ActualizarEstadoPaquete(tx *gorm.DB, paquete *modelosPaquete.Paquete, estad
 		return fmt.Errorf("error al actualizar el estado del paquete: %w", err)
 	}
 
-	if err := agregarHistorialPaquete(tx, paquete.ID, estado); err != nil {
+	if err := AgregarHistorialPaquete(tx, paquete.ID, estado); err != nil {
 		return fmt.Errorf("error al actualizar el historial del paquete: %w", err)
 	}
 
@@ -138,7 +127,7 @@ func ObtenerHistorialPaquete(id_paquete string) ([]modelosPaquete.HistorialPaque
 	return historialPaquetes, nil
 }
 
-func agregarHistorialPaquete(tx *gorm.DB, id_paquete uint, estado modelosPaquete.Estado) error {
+func AgregarHistorialPaquete(tx *gorm.DB, id_paquete uint, estado modelosPaquete.Estado) error {
 
 	var historialPaquete modelosPaquete.HistorialPaquete
 	historialPaquete.Id_paquete = id_paquete
@@ -155,7 +144,7 @@ func agregarHistorialPaquete(tx *gorm.DB, id_paquete uint, estado modelosPaquete
 func ObtenerPaquetesPorViaje(id_viaje uint) ([]modelosPaquete.Paquete, error) {
 
 	var paquetes []modelosPaquete.Paquete
-	if err := baseDeDatos.DB.Where("id = ?", id_viaje).Find(&paquetes).Error; err != nil {
+	if err := baseDeDatos.DB.Find(&paquetes, "id_viaje = ?", id_viaje).Error; err != nil {
 		return paquetes, err
 	}
 	return paquetes, nil
