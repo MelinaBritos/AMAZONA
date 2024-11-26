@@ -37,30 +37,34 @@ func GetRepuestoHandler(w http.ResponseWriter, r *http.Request) {
 
 func PostRepuestoHandler(w http.ResponseWriter, r *http.Request) {
 	//aca va la logica para agregar un nuevo repuesto
-	var repuesto modelosProveedor.Repuesto
+	var repuestos []modelosProveedor.Repuesto
 
-	if err := json.NewDecoder(r.Body).Decode(&repuesto); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&repuestos); err != nil {
 		http.Error(w, "Error al decodificar el repuesto: "+err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	if err := validaciones.ValidarRepuesto(repuesto); err != nil {
-		http.Error(w, "Datos del repuesto invalidos: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	tx := baseDeDatos.DB.Begin()
 
-	if err := tx.Create(&repuesto); err.Error != nil {
-		tx.Rollback()
-		http.Error(w, "Error al crear el repuesto: "+err.Error.Error(), http.StatusInternalServerError)
-		return
+	for _, repuesto := range repuestos {
+		if err := validaciones.ValidarRepuesto(repuesto); err != nil {
+			http.Error(w, "Datos del repuesto invalidos: "+err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		if err := tx.Create(&repuesto); err.Error != nil {
+			tx.Rollback()
+			http.Error(w, "Error al crear el repuesto: "+err.Error.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		tx.Save(&repuesto)
 	}
 
 	tx.Commit()
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(&repuesto)
+	json.NewEncoder(w).Encode(&repuestos)
 }
 
 func PutRepuestoHandler(w http.ResponseWriter, r *http.Request) {
