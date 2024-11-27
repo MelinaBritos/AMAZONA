@@ -160,6 +160,7 @@ func AsignarViajeAPaquete(tx *gorm.DB, id_viaje uint, paquete *modelosPaquete.Pa
 
 	var ingresoViaje modelosBitacora.IngresosViaje
 	if err := baseDeDatos.DB.Where("id_viaje = ?", id_viaje).Find(&ingresoViaje).Error; err != nil {
+
 		return fmt.Errorf("error al obtener el ingreso de viaje: %w", err)
 	}
 
