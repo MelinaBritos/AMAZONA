@@ -296,7 +296,7 @@ func validarViaje(viaje modelosBitacora.Viaje) error {
 			return fmt.Errorf("paquete con ID %v no encontrado: %w", paqueteViaje.ID, err)
 		}
 
-		if paquete.Estado != modelosPaquete.SIN_ASIGNAR {
+		if paquete.Estado != modelosPaquete.SIN_ASIGNAR && paquete.Estado != modelosPaquete.NO_ENTREGADO {
 			return fmt.Errorf("paquete con ID %v no está disponible para asignar (estado actual: %v)", paqueteViaje.ID, paquete.Estado)
 		}
 
