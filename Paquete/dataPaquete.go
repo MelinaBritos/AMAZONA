@@ -183,6 +183,10 @@ func EntregarPaquete(id_paquete uint) error {
 		return fmt.Errorf("el paquete no se encuentra en viaje, su estado es: %s", paquete.Estado)
 	}
 
+	if paquete.Estado == modelosPaquete.ENTREGADO {
+		return fmt.Errorf("el paquete ya se encuentra entregado")
+	}
+
 	if err := ActualizarEstadoPaquete(tx, &paquete, modelosPaquete.ENTREGADO); err != nil {
 		tx.Rollback()
 		return fmt.Errorf("error al actualizar el estado del paquete: %w", err)
