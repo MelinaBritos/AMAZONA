@@ -89,19 +89,25 @@ func PutPaqueteHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Paquetes actualizados"))
 }
 
-/* func DeletePaqueteHandler(w http.ResponseWriter, r *http.Request) {
+func DeletePaqueteHandler(w http.ResponseWriter, r *http.Request) {
 
 	params := mux.Vars(r)
-	id_paquete := params["id"]
+	id_paquete_str := params["id"]
 
-	if err := dataPaquete.BorrarPaquete(id_paquete); err != nil {
+	id_paquete, err := strconv.ParseUint(id_paquete_str, 10, 64)
+	if err != nil {
+		http.Error(w, "ID del paquete inválido", http.StatusBadRequest)
+		return
+	}
+
+	if err := dataPaquete.BorrarPaquete(uint(id_paquete)); err != nil {
 		http.Error(w, "Error al borrar el paquete: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	w.Write([]byte("Paquete borrado"))
 	w.WriteHeader(http.StatusOK)
-} */
+}
 
 func GetPaquetesSinAsignar(w http.ResponseWriter, r *http.Request) {
 	paquetes := dataPaquete.ObtenerPaquetesSinAsignar()
@@ -112,5 +118,27 @@ func GetPaquetesSinAsignar(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error al codificar paquetes en JSON", http.StatusInternalServerError)
 		return
 	}
+
+}
+
+func PutEntregarPaquete(w http.ResponseWriter, r *http.Request) {
+
+	params := mux.Vars(r)
+	id_paquete_str := params["id"]
+
+	id_paquete, err := strconv.ParseUint(id_paquete_str, 10, 64)
+	if err != nil {
+		http.Error(w, "ID del paquete inválido", http.StatusBadRequest)
+		return
+	}
+
+	if err := dataPaquete.EntregarPaquete(uint(id_paquete)); err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte("Error al entregar el paquete: " + err.Error()))
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	//json.NewEncoder(w).Encode(&paquete)
 
 }

@@ -74,7 +74,7 @@ func BorrarPaquete(id_paquete uint) error {
 
 	paquete, err := ObtenerPaquete(id_paquete)
 	if err != nil {
-		return fmt.Errorf("error al actualizar el paquete: %w", err)
+		return fmt.Errorf("error al obtener el paquete: %w", err)
 	}
 
 	if err := baseDeDatos.DB.Unscoped().Delete(&paquete).Error; err != nil {
@@ -160,7 +160,6 @@ func AsignarViajeAPaquete(tx *gorm.DB, id_viaje uint, paquete *modelosPaquete.Pa
 
 	var ingresoViaje modelosBitacora.IngresosViaje
 	if err := baseDeDatos.DB.Where("id_paquete = ?", paquete.ID).Find(&ingresoViaje).Error; err != nil {
-
 		return fmt.Errorf("error al obtener el ingreso de viaje: %w", err)
 	}
 
@@ -170,4 +169,28 @@ func AsignarViajeAPaquete(tx *gorm.DB, id_viaje uint, paquete *modelosPaquete.Pa
 	}
 
 	return tx.Error
+}
+
+func EntregarPaquete(id_paquete uint) error {
+	paquete, err := ObtenerPaquete(id_paquete)
+	if err != nil {
+		return fmt.Errorf("error al obtener el paquete: %w", err)
+	}
+
+	tx := baseDeDatos.DB.Begin()
+
+	if paquete.Estado != modelosPaquete.EN_VIAJE {
+		return fmt.Errorf("el paquete no se encuentra en viaje, su estado es: %s", paquete.Estado)
+	}
+
+	if err := ActualizarEstadoPaquete(tx, &paquete, modelosPaquete.ENTREGADO); err != nil {
+		tx.Rollback()
+		return fmt.Errorf("error al actualizar el estado del paquete: %w", err)
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		return fmt.Errorf("error al confirmar la transacción: %w", err)
+	}
+
+	return nil
 }
