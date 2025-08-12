@@ -16,10 +16,12 @@ mantenimiento y el uso de los vehículos, garantizando una visibilidad y control
 mejorados de las operaciones. (Back-End)
 
 Tecnologias:
+
 ➔ Go: Go (o Golang) es un lenguaje de programación desarrollado por Google,
 conocido por su simplicidad, eficiencia y soporte nativo para la concurrencia.
 Es ideal para construir aplicaciones rápidas y escalables, como servidores
 web, microservicios y herramientas de red.
+
 ➔ PostgreSQL: Es un sistema de gestión de bases de datos relacional de
 código abierto, conocido por su robustez, flexibilidad y cumplimiento con el
 estándar SQL. Se destaca por soportar consultas complejas, integridad
